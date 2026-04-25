@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markets — Kinetix Exchange Loan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:             #0B0E11;
+      --surface:        rgba(18,24,38,0.9);
+      --surface-solid:  #121826;
+      --border:         #1f2937;
+      --text-primary:   #EAECEF;
+      --text-secondary: #9CA3AF;
+      --text-muted:     #4B5563;
+      --accent:         #F7A600;
+      --accent-light:   #FFD54F;
+      --green:          #16C784;
+      --red:            #EA3943;
+      --radius:         18px;
+      --shadow:         0 10px 35px rgba(0,0,0,.55);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--accent); }
+
+    .nav-actions { display: flex; gap: 12px; }
+
+    .btn {
+      padding: 9px 22px;
+      border-radius: var(--radius);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-solid);
+      color: var(--text-primary);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover { border-color: var(--accent); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: var(--bg);
+      border: none;
+    }
+
+    .btn-primary:hover { box-shadow: 0 4px 18px rgba(247,166,0,.35); }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 40px 60px;
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 300;
+      margin-top: 4px;
+    }
+
+    /* ── Main grid ── */
+    .markets-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Prices panel ── */
+    .prices-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .live-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    .search-box {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text-primary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus { border-color: rgba(247,166,0,.55); }
+
+    .coin-table { width: 100%; }
+
+    .coin-row {
+      display: flex;
+      align-items: center;
+      padding: 11px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(31,41,55,0.5);
+      transition: background 0.15s;
+    }
+
+    .coin-row:last-child { border-bottom: none; }
+
+    .coin-row:hover,
+    .coin-row.selected { background: rgba(247,166,0,0.06); }
+
+    .coin-row.selected { border-left: 2px solid var(--accent); }
+
+    .coin-rank {
+      width: 22px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .coin-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex-shrink: 0;
+      background: var(--surface-solid);
+    }
+
+    .coin-info { flex: 1; min-width: 0; }
+
+    .coin-symbol {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .coin-name {
+      font-size: 0.7rem;
+      font-weight: 300;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .coin-price-col { text-align: right; }
+
+    .coin-price {
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .coin-change {
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .up   { color: var(--green); }
+    .down { color: var(--red); }
+
+    /* ── Chart panel ── */
+    .chart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .chart-toolbar {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .chart-pair {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 130px;
+    }
+
+    .chart-price-live {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .chart-change-live {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .pair-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--surface-solid);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill:hover { border-color: var(--accent); color: var(--accent); }
+    .pill.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    #tv-chart-container {
+      width: 100%;
+      height: 520px;
+    }
+
+    #tv-chart-container iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(11,14,17,0.88); backdrop-filter: blur(6px);
+      z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 3px solid rgba(247,166,0,0.15); border-top-color: var(--accent);
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+    .loading-dots::after { content: ''; animation: dots 1.4s steps(4,end) infinite; }
+    @keyframes dots { 0%{content:'';} 25%{content:'.';} 50%{content:'..';} 75%{content:'...';} }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .markets-grid { grid-template-columns: 1fr; }
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .page { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Logging you out<span class="loading-dots"></span></div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-logo" href="/">Kinetix Exchange Loan</a>
+  <ul class="nav-links">
+    <li><a href="/" onclick="openLoginOnHome(event)">Borrow</a></li>
+    <li><a href="/markets" class="active">Markets</a></li>
+    <li><a href="/about">About Us</a></li>
+  </ul>
+  <div class="nav-actions">
+    {% if current_user.is_authenticated %}
+      <a class="btn btn-primary" href="{{ '/admin' if current_user.is_admin else '/dashboard' }}">← My Account</a>
+      <a class="btn" href="/logout" onclick="document.getElementById('loadingOverlay').classList.add('show');return true;">Log Out</a>
+    {% else %}
+      <button class="btn" onclick="window.location='/'">Log In</button>
+      <button class="btn btn-primary" onclick="window.location='/'">Get Started</button>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>Markets</h1>
+  </div>
+
+  <div class="markets-grid">
+
+    <!-- Prices panel -->
+    <div class="prices-panel">
+      <div class="panel-header">
+        <span class="panel-title">Spot Prices</span>
+        <span class="live-dot">LIVE</span>
+      </div>
+      <div class="search-box">
+        <input id="coin-search" type="text" placeholder="Search coin..." oninput="filterCoins()" />
+      </div>
+      <div class="coin-table" id="coin-table">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Chart panel -->
+    <div class="chart-panel">
+      <div class="chart-toolbar">
+        <div>
+          <div class="chart-pair" id="chart-pair-label">BTC / USDT</div>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:2px;">
+            <span class="chart-price-live" id="chart-price-live">—</span>
+            <span class="chart-change-live" id="chart-change-live"></span>
+          </div>
+        </div>
+        <div class="pair-pills" id="pair-pills">
+          <button class="pill active" data-symbol="BINANCE:BTCUSDT" data-label="BTC / USDT" onclick="switchPair(this)">BTC</button>
+          <button class="pill" data-symbol="BINANCE:ETHUSDT"  data-label="ETH / USDT"  onclick="switchPair(this)">ETH</button>
+          <button class="pill" data-symbol="BINANCE:SOLUSDT"  data-label="SOL / USDT"  onclick="switchPair(this)">SOL</button>
+          <button class="pill" data-symbol="BINANCE:BNBUSDT"  data-label="BNB / USDT"  onclick="switchPair(this)">BNB</button>
+          <button class="pill" data-symbol="BINANCE:XRPUSDT"  data-label="XRP / USDT"  onclick="switchPair(this)">XRP</button>
+          <button class="pill" data-symbol="BINANCE:DOGEUSDT" data-label="DOGE / USDT" onclick="switchPair(this)">DOGE</button>
+          <button class="pill" data-symbol="BINANCE:ADAUSDT"  data-label="ADA / USDT"  onclick="switchPair(this)">ADA</button>
+          <button class="pill" data-symbol="BINANCE:LTCUSDT"  data-label="LTC / USDT"  onclick="switchPair(this)">LTC</button>
+          <button class="pill" data-symbol="FX_IDC:CADUSD"   data-label="CAD / USD"   onclick="switchPair(this)">CAD</button>
+        </div>
+      </div>
+      <div id="tv-chart-container"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const LS_KEY = 'kx_prices_cache';
+
+  /* ── State ── */
+  let allCoins      = [];
+  let currentSymbol = 'BINANCE:BTCUSDT';
+
+  /* CAD uses a forex symbol on TradingView, not a Binance pair */
+  const TV_SYMBOL_MAP = { 'CADC': 'FX_IDC:CADUSD' };
+
+  function tvSymbolFor(sym) {
+    return TV_SYMBOL_MAP[sym] || ('BINANCE:' + sym + 'USDT');
+  }
+
+  /* ── TradingView chart ── */
+  function loadChart(symbol) {
+    const container = document.getElementById('tv-chart-container');
+    container.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.id = 'tv_widget_' + Date.now();
+    wrapper.style.height = '520px';
+    container.appendChild(wrapper);
+    new TradingView.widget({
+      autosize:            true,
+      symbol:              symbol,
+      interval:            '60',
+      timezone:            'Etc/UTC',
+      theme:               'dark',
+      style:               '1',
+      locale:              'en',
+      toolbar_bg:          '#121826',
+      backgroundColor:     '#0B0E11',
+      gridColor:           'rgba(31,41,55,0.5)',
+      enable_publishing:   false,
+      allow_symbol_change: false,
+      hide_top_toolbar:    false,
+      hide_legend:         false,
+      save_image:          false,
+      container_id:        wrapper.id,
+      studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies']
+    });
+  }
+
+  function switchPair(btn) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentSymbol = btn.dataset.symbol;
+    document.getElementById('chart-pair-label').textContent = btn.dataset.label;
+    loadChart(currentSymbol);
+    updateChartHeader();
+  }
+
+  /* ── Prices fetch with localStorage caching ── */
+  function applyPrices(data) {
+    if (!Array.isArray(data) || !data.length) return;
+    allCoins = data;
+    renderTable(data);
+    updateChartHeader();
+  }
+
+  function fetchPrices() {
+    fetch('/api/prices')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length) {
+          try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) {}
+          applyPrices(data);
+        } else {
+          /* CoinGecko returned an error object (e.g. rate limit) — use cache */
+          try {
+            const cached = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+            applyPrices(cached);
+          } catch(e) {}
+        }
+      })
+      .catch(() => {
+        try {
+          const cached = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+          applyPrices(cached);
+        } catch(e) {}
+      });
+  }
+
+  function renderTable(coins) {
+    const query    = document.getElementById('coin-search').value.toLowerCase();
+    const filtered = coins.filter(c =>
+      c.symbol.toLowerCase().includes(query) ||
+      c.name.toLowerCase().includes(query)
+    );
+
+    const table = document.getElementById('coin-table');
+    table.innerHTML = filtered.map((c, i) => {
+      const price  = c.current_price || 0;
+      const change = c.price_change_percentage_24h || 0;
+      const dir    = change >= 0 ? 'up' : 'down';
+      const arrow  = change >= 0 ? '▲' : '▼';
+      const sym    = c.symbol.toUpperCase();
+      const tvSym  = tvSymbolFor(sym);
+      const priceStr = price >= 1
+        ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+      const label      = sym === 'CADC' ? 'CAD / USD' : sym + ' / USDT';
+      const isSelected = tvSym === currentSymbol;
+
+      return `
+        <div class="coin-row${isSelected ? ' selected' : ''}"
+             onclick="selectCoinRow(this, '${tvSym}', '${label}')">
+          <span class="coin-rank">${i + 1}</span>
+          <img class="coin-icon" src="${c.image}" alt="${c.name}" loading="lazy" />
+          <div class="coin-info">
+            <div class="coin-symbol">${sym}</div>
+            <div class="coin-name">${c.name}</div>
+          </div>
+          <div class="coin-price-col">
+            <div class="coin-price">$${priceStr}</div>
+            <div class="coin-change ${dir}">${arrow} ${Math.abs(change).toFixed(2)}%</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function selectCoinRow(row, symbol, label) {
+    currentSymbol = symbol;
+    document.querySelectorAll('.coin-row').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+    document.getElementById('chart-pair-label').textContent = label;
+    document.querySelectorAll('.pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.symbol === symbol);
+    });
+    loadChart(symbol);
+    updateChartHeader();
+  }
+
+  function updateChartHeader() {
+    /* derive the coin symbol from the current TV symbol */
+    let base;
+    if (currentSymbol.startsWith('FX_IDC:')) {
+      base = 'cadc';
+    } else {
+      base = currentSymbol.replace('BINANCE:', '').replace('USDT', '').toLowerCase();
+    }
+    const coin = allCoins.find(c => c.symbol.toLowerCase() === base);
+    if (!coin || !coin.current_price) return;
+
+    const price  = coin.current_price >= 1
+      ? '$' + coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '$' + coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 });
+    const change = coin.price_change_percentage_24h || 0;
+    const dir    = change >= 0 ? 'up' : 'down';
+    const arrow  = change >= 0 ? '▲' : '▼';
+
+    document.getElementById('chart-price-live').textContent = price;
+    const el = document.getElementById('chart-change-live');
+    el.textContent = `${arrow} ${Math.abs(change).toFixed(2)}%`;
+    el.className   = 'chart-change-live ' + dir;
+  }
+
+  function filterCoins() { renderTable(allCoins); }
+
+  /* ── Boot ── */
+
+  /* 1. Paint localStorage cache immediately — table is never blank on load */
+  try {
+    const cached = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    if (Array.isArray(cached) && cached.length) applyPrices(cached);
+  } catch(e) {}
+
+  /* 2. Fetch fresh prices right away — independent of TradingView */
+  fetchPrices();
+  setInterval(fetchPrices, 15000);
+
+  /* 3. Load TradingView for the chart — prices table works even if this is slow */
+  const tvScript = document.createElement('script');
+  tvScript.src = 'https://s3.tradingview.com/tv.js';
+  tvScript.onload = function () { loadChart(currentSymbol); };
+  document.head.appendChild(tvScript);
+</script>
+</body>
+</html>

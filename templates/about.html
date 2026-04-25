@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Kinetix Exchange Loan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:             #0B0E11;
+      --surface:        rgba(18,24,38,0.9);
+      --surface-solid:  #121826;
+      --border:         #1f2937;
+      --text-primary:   #EAECEF;
+      --text-secondary: #9CA3AF;
+      --text-muted:     #4B5563;
+      --accent:         #F7A600;
+      --accent-light:   #FFD54F;
+      --green:          #16C784;
+      --red:            #EA3943;
+      --radius:         18px;
+      --shadow:         0 10px 35px rgba(0,0,0,.55);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.8;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--accent); }
+
+    .nav-actions { display: flex; gap: 12px; }
+
+    .btn {
+      padding: 9px 22px;
+      border-radius: var(--radius);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-solid);
+      color: var(--text-primary);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover { border-color: var(--accent); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: var(--bg);
+      border: none;
+    }
+
+    .btn-primary:hover { box-shadow: 0 4px 18px rgba(247,166,0,.35); }
+
+    /* ── Hero banner ── */
+    .about-hero {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      padding: 64px 40px 52px;
+      text-align: center;
+    }
+
+    .about-hero .hero-slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .about-hero .hero-slides .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 1.4s ease-in-out;
+    }
+
+    .about-hero .hero-slides .slide.active { opacity: 1; }
+
+    .about-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(11,14,17,0.65) 0%,
+        rgba(11,14,17,0.50) 50%,
+        rgba(11,14,17,0.80) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .about-hero .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .about-hero .badge {
+      display: inline-block;
+      background: rgba(247,166,0,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(247,166,0,0.3);
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .about-hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .about-hero h1 span { color: var(--accent); }
+
+    .about-hero p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 400;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 40px 80px;
+    }
+
+    /* ── Sidebar TOC + content grid ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ── Table of contents ── */
+    .toc {
+      position: sticky;
+      top: 84px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 14px;
+    }
+
+    .toc a {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 5px 0;
+      border-left: 2px solid transparent;
+      padding-left: 10px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+
+    /* ── Sections ── */
+    .about-section {
+      margin-bottom: 56px;
+      scroll-margin-top: 84px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .about-section h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-section p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 400;
+      margin-bottom: 16px;
+    }
+
+    .about-section p:last-child { margin-bottom: 0; }
+
+    .about-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 28px 0 10px;
+    }
+
+    .about-section ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 16px;
+    }
+
+    .about-section ul li {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      padding: 6px 0 6px 20px;
+      position: relative;
+    }
+
+    .about-section ul li::before {
+      content: '—';
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    /* ── Step cards ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: var(--bg);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-body h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .step-body p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    /* ── Info callout ── */
+    .callout {
+      background: rgba(247,166,0,0.07);
+      border: 1px solid rgba(247,166,0,0.25);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .callout strong { color: var(--accent); }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 36px 40px;
+      box-shadow: var(--shadow);
+    }
+
+    .footer-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-logo { font-size: 1rem; font-weight: 700; color: var(--accent); }
+
+    .footer-copy { font-size: 0.75rem; font-weight: 300; color: var(--text-muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .about-hero { padding: 44px 20px 36px; }
+      .page { padding: 32px 20px 60px; }
+      .content-grid { grid-template-columns: 1fr; }
+      .toc { display: none; }
+      footer { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-logo" href="/">Kinetix Exchange Loan</a>
+  <ul class="nav-links">
+    <li><a href="/" onclick="event.preventDefault();window.location='/';">Borrow</a></li>
+    <li><a href="/markets">Markets</a></li>
+    <li><a href="/about" class="active">About Us</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn" onclick="window.location='/'">Log In</button>
+    <button class="btn btn-primary" onclick="window.location='/'">Get Started</button>
+  </div>
+</nav>
+
+<!-- Hero banner -->
+<div class="about-hero">
+  <div class="hero-slides">
+    <div class="slide active" data-bg="{{ url_for('static', filename='about us 1.jpg') }}"></div>
+    <div class="slide" data-bg="{{ url_for('static', filename='about us 2.jpg') }}"></div>
+    <div class="slide" data-bg="{{ url_for('static', filename='about us 3.jpg') }}"></div>
+  </div>
+  <div class="hero-content">
+    <div class="badge">Company</div>
+    <h1>About <span>Kinetix Exchange Loan</span></h1>
+    <p>Everything you need to know about who we are, how our platform works, and the terms that govern your use of our services.</p>
+  </div>
+</div>
+
+<div class="page">
+  <div class="content-grid">
+
+    <!-- Table of contents -->
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <a href="#who-we-are">Who We Are</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#terms">Terms of Use</a>
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#disclaimer">Disclaimer</a>
+    </aside>
+
+    <!-- Main content -->
+    <div>
+
+      <!-- Who We Are -->
+      <div class="about-section" id="who-we-are">
+        <div class="section-label">Overview</div>
+        <h2>Who We Are</h2>
+        <p>Kinetix Exchange Loan is a digital asset lending platform designed to give cryptocurrency holders fast, flexible access to liquidity — without requiring them to liquidate their holdings. We bridge the gap between traditional finance and the digital asset ecosystem by offering collateral-backed loans secured against leading cryptocurrencies.</p>
+        <p>Founded on the principle that your assets should work for you, Kinetix provides a transparent, technology-driven lending experience. Our platform supports a growing range of digital assets including Bitcoin (BTC), Ethereum (ETH), Solana (SOL), BNB, XRP, and more — enabling borrowers to unlock the value of their portfolio while retaining long-term exposure to the market.</p>
+        <p>We operate with a commitment to security, speed, and fairness. Every loan is fully collateralised, meaning no credit checks, no lengthy approval processes, and no ambiguity. Our rates are competitive, our terms are clear, and our technology is built to handle your assets with the highest standards of care.</p>
+
+        <h3>Our Mission</h3>
+        <p>To democratise access to credit by empowering digital asset holders with a simple, secure, and efficient way to borrow against their portfolio — on their terms.</p>
+
+        <h3>Core Values</h3>
+        <ul>
+          <li><strong>Transparency</strong> — No hidden fees, no surprise rate changes. What you see is what you get.</li>
+          <li><strong>Security</strong> — Collateral is held in audited, insured cold storage at all times.</li>
+          <li><strong>Speed</strong> — Funds are typically disbursed within minutes of loan approval.</li>
+          <li><strong>Flexibility</strong> — Loan durations from 7 days to 12 months with multiple LTV options.</li>
+          <li><strong>Integrity</strong> — We act in the best interest of our users and maintain full regulatory compliance.</li>
+        </ul>
+      </div>
+
+      <!-- How It Works -->
+      <div class="about-section" id="how-it-works">
+        <div class="section-label">Process</div>
+        <h2>How It Works</h2>
+        <p>Kinetix Exchange Loan makes borrowing against your crypto straightforward. The entire process — from application to disbursement — is designed to be completed in minutes.</p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>Create an Account</h4>
+              <p>Register with your name, username, and a secure password. Verification is fast and your data is protected with industry-standard encryption.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>Choose Your Collateral</h4>
+              <p>Select the cryptocurrency you wish to use as collateral — BTC, ETH, SOL, BNB, CAD, and more. Our platform shows you a real-time estimate of your loan eligibility.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>Set Your Loan Terms</h4>
+              <p>Choose your Loan-to-Value (LTV) ratio, loan duration, and review the applicable APR. Use our built-in calculator to understand your repayment obligations before committing.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h4>Transfer Collateral</h4>
+              <p>Transfer your collateral to the designated Kinetix custody address. Once confirmed on-chain, your loan is activated and funds are disbursed immediately.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <h4>Repay and Reclaim</h4>
+              <p>Repay your loan principal and accrued interest at any time before the due date. Upon full repayment, your collateral is returned to your wallet promptly.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Important:</strong> If the value of your collateral falls below the platform's minimum LTV threshold, you may be subject to a margin call. Kinetix will notify you in advance, giving you the opportunity to add collateral or partially repay the loan before liquidation is initiated.
+        </div>
+
+        <h3>Supported Assets</h3>
+        <p>We currently accept the following assets as collateral: Bitcoin (BTC), Ethereum (ETH), Solana (SOL), BNB, XRP, Litecoin (LTC), Dogecoin (DOGE), Cardano (ADA), TRON (TRX), CAD Coin (CAD), USDT, and USDC. Additional assets may be added at the platform's discretion.</p>
+
+        <h3>Interest &amp; Fees</h3>
+        <p>Annual Percentage Rates (APR) are determined by your chosen LTV ratio. Lower LTV ratios attract lower rates, reducing your risk and overall cost of borrowing. There are no origination fees, early repayment penalties, or hidden administrative charges. The only cost to the borrower is the stated interest accrued over the loan duration.</p>
+      </div>
+
+      <!-- Terms of Use -->
+      <div class="about-section" id="terms">
+        <div class="section-label">Legal</div>
+        <h2>Terms of Use</h2>
+        <p>These Terms of Use ("Terms") govern your access to and use of the Kinetix Exchange Loan platform, including all associated services, tools, and content (collectively, the "Platform"). By creating an account or using any part of the Platform, you agree to be bound by these Terms in full. If you do not agree, you must discontinue use immediately.</p>
+
+        <h3>1. Eligibility</h3>
+        <p>You must be at least 18 years of age and have the legal capacity to enter into binding contracts in your jurisdiction to use this Platform. By registering, you represent and warrant that you meet these requirements and that all information you provide is accurate, current, and complete.</p>
+
+        <h3>2. Account Responsibility</h3>
+        <p>You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify Kinetix immediately upon becoming aware of any unauthorised use of your account. Kinetix shall not be liable for any loss or damage arising from your failure to safeguard your login information.</p>
+
+        <h3>3. Loan Obligations</h3>
+        <p>By accepting a loan, you agree to repay the full principal amount plus accrued interest by the agreed due date. Failure to repay may result in the liquidation of your collateral. You acknowledge that cryptocurrency markets are volatile and that the value of your collateral may fluctuate significantly during the loan term.</p>
+
+        <h3>4. Collateral &amp; Margin Calls</h3>
+        <p>Kinetix reserves the right to issue a margin call if your collateral value falls below the minimum required threshold. If you do not respond within the specified notice period, Kinetix may liquidate part or all of your collateral to recover the outstanding loan amount. Kinetix is not responsible for market losses incurred during liquidation.</p>
+
+        <h3>5. Prohibited Activities</h3>
+        <ul>
+          <li>Using the Platform for any unlawful purpose, including money laundering or fraud</li>
+          <li>Submitting false or misleading information during registration or loan applications</li>
+          <li>Attempting to gain unauthorised access to Platform systems or other user accounts</li>
+          <li>Using automated tools to scrape, copy, or misuse Platform data</li>
+          <li>Engaging in any activity that disrupts or interferes with Platform operations</li>
+        </ul>
+
+        <h3>6. Modification of Terms</h3>
+        <p>Kinetix reserves the right to modify these Terms at any time. Continued use of the Platform following notice of such changes constitutes your acceptance of the revised Terms. It is your responsibility to review these Terms periodically.</p>
+
+        <h3>7. Governing Law</h3>
+        <p>These Terms shall be governed by and construed in accordance with applicable law. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the relevant courts as determined by Kinetix's registered jurisdiction.</p>
+      </div>
+
+      <!-- Privacy Policy -->
+      <div class="about-section" id="privacy">
+        <div class="section-label">Legal</div>
+        <h2>Privacy Policy</h2>
+        <p>Kinetix Exchange Loan is committed to protecting your personal information. This Privacy Policy describes how we collect, use, store, and protect the data you provide when using our Platform.</p>
+
+        <h3>1. Information We Collect</h3>
+        <p>We collect personal information you voluntarily provide during registration and loan applications, including your first and last name, username, and contact details. We may also collect technical data such as IP addresses, browser type, device identifiers, and usage patterns to improve our services and detect fraudulent activity.</p>
+
+        <h3>2. How We Use Your Information</h3>
+        <ul>
+          <li>To create and manage your account</li>
+          <li>To process loan applications and manage repayments</li>
+          <li>To communicate with you regarding your account, loans, or Platform updates</li>
+          <li>To comply with applicable legal and regulatory obligations</li>
+          <li>To detect, investigate, and prevent fraudulent or unauthorised activity</li>
+        </ul>
+
+        <h3>3. Data Sharing</h3>
+        <p>We do not sell, rent, or trade your personal information to third parties for marketing purposes. We may share your data with trusted service providers who assist in operating our Platform, subject to strict confidentiality obligations. We may also disclose information where required by law, regulation, or a valid court order.</p>
+
+        <h3>4. Data Security</h3>
+        <p>We employ industry-standard security measures including encryption, access controls, and regular security audits to protect your personal data from unauthorised access, disclosure, or loss. However, no system is entirely infallible and we cannot guarantee absolute security.</p>
+
+        <h3>5. Data Retention</h3>
+        <p>We retain your personal information for as long as your account remains active and as required to fulfil our legal and regulatory obligations. Upon request, we will delete or anonymise your data where we are not legally required to retain it.</p>
+
+        <h3>6. Your Rights</h3>
+        <p>Depending on your jurisdiction, you may have the right to access, correct, or request deletion of the personal data we hold about you. To exercise these rights, please contact us through the Platform's official support channels.</p>
+
+        <h3>7. Cookies</h3>
+        <p>The Platform may use cookies and similar tracking technologies to enhance your experience, remember your preferences, and analyse usage patterns. You may configure your browser to refuse cookies, though this may limit certain Platform functionality.</p>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="about-section" id="disclaimer">
+        <div class="section-label">Legal</div>
+        <h2>Disclaimer</h2>
+
+        <div class="callout">
+          <strong>Please read carefully.</strong> The following disclaimers are an important part of your agreement with Kinetix Exchange Loan and limit our liability in connection with your use of the Platform.
+        </div>
+
+        <h3>1. Not Financial Advice</h3>
+        <p>Nothing on the Kinetix Exchange Loan Platform constitutes financial, investment, legal, or tax advice. All content, tools, calculators, and information provided are for general informational purposes only. You should consult a qualified professional before making any financial decisions. Kinetix does not recommend or endorse the purchase, sale, or holding of any specific digital asset.</p>
+
+        <h3>2. Risk of Loss</h3>
+        <p>Cryptocurrency markets are highly volatile. The value of digital assets can decline rapidly and unpredictably. By using collateral to secure a loan, you accept the risk that market movements may trigger a margin call or result in the liquidation of your collateral. Kinetix Exchange Loan shall not be liable for any losses — direct, indirect, or consequential — resulting from such market events.</p>
+
+        <h3>3. No Warranty</h3>
+        <p>The Platform is provided on an "as is" and "as available" basis without warranties of any kind, whether express or implied. Kinetix does not warrant that the Platform will be uninterrupted, error-free, or free from viruses or other harmful components. We reserve the right to suspend, modify, or discontinue any part of the Platform at any time without notice.</p>
+
+        <h3>4. Third-Party Services</h3>
+        <p>The Platform may integrate or link to third-party services, including price data providers and blockchain networks. Kinetix has no control over these external services and accepts no responsibility for their accuracy, reliability, or availability. Your use of any third-party service is subject to that party's own terms and conditions.</p>
+
+        <h3>5. Regulatory Compliance</h3>
+        <p>It is your sole responsibility to ensure that your use of the Platform complies with the laws and regulations applicable in your jurisdiction. The availability of Kinetix Exchange Loan services does not imply that they are legally permissible in all regions. Users in jurisdictions where such services are prohibited are not authorised to use the Platform.</p>
+
+        <h3>6. Limitation of Liability</h3>
+        <p>To the fullest extent permitted by applicable law, Kinetix Exchange Loan, its directors, officers, employees, and agents shall not be liable for any indirect, incidental, special, punitive, or consequential damages arising from your use of — or inability to use — the Platform, regardless of whether such damages were foreseeable or whether Kinetix had been advised of the possibility thereof.</p>
+
+        <p style="margin-top:24px;font-size:0.82rem;color:var(--text-muted);">Last updated: April 2026. These policies are subject to change without prior notice. Continued use of the Platform constitutes acceptance of any updated terms.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Kinetix Exchange Loan</div>
+    <div class="footer-copy">© 2026 Kinetix. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const slides = document.querySelectorAll('.about-hero .hero-slides .slide');
+    slides.forEach(s => { s.style.backgroundImage = "url('" + s.dataset.bg + "')"; });
+    let current = 0;
+    setInterval(function () {
+      slides[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+    }, 4500);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Kinetix Exchange Loan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#0B0E11; --surface:rgba(18,24,38,0.9); --surface-solid:#121826;
+      --border:#1f2937; --text:#EAECEF; --muted:#9CA3AF; --dim:#4B5563;
+      --accent:#F7A600; --accent-light:#FFD54F;
+      --green:#16C784; --red:#EA3943;
+      --radius:18px; --shadow:0 10px 35px rgba(0,0,0,.55);
+      --sidebar-w:250px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+
+    /* ── Topbar ── */
+    .topbar{
+      height:64px; display:flex; align-items:center; justify-content:space-between;
+      padding:0 22px; background:rgba(18,24,38,.95); border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:60; backdrop-filter:blur(10px); gap:12px;
+    }
+    .menu-btn{
+      display:none; align-items:center; justify-content:center;
+      width:42px; height:42px; border-radius:12px; border:1px solid var(--border);
+      background:var(--surface-solid); color:var(--text); cursor:pointer; flex:0 0 auto;
+    }
+    .menu-btn:hover{border-color:var(--accent);}
+    .menu-icon{width:18px;height:18px;position:relative;}
+    .menu-icon span{position:absolute;left:0;right:0;height:2px;border-radius:2px;background:var(--text);}
+    .menu-icon span:nth-child(1){top:3px;} .menu-icon span:nth-child(2){top:8px;} .menu-icon span:nth-child(3){top:13px;}
+
+    /* Brand mark */
+    .brand{display:flex;align-items:center;gap:10px;min-width:0;}
+    .brand-mark{
+      width:34px; height:34px; border-radius:10px; position:relative; overflow:hidden; flex:0 0 auto;
+      border:1px solid rgba(255,213,79,.22); box-shadow:0 10px 25px rgba(247,166,0,.18);
+      background:radial-gradient(circle at 30% 30%,rgba(255,213,79,.95),rgba(247,166,0,.9) 50%,rgba(247,166,0,.35) 100%);
+    }
+    .brand-mark::after{
+      content:""; position:absolute; inset:-20%;
+      background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.3) 45%,transparent 60%);
+      transform:rotate(18deg);
+    }
+    .brand-text{font-weight:800;letter-spacing:.6px;font-size:15px;color:var(--accent);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .brand-sub{display:block;font-size:9px;letter-spacing:1.6px;color:var(--muted);margin-top:2px;}
+
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .nav-user{font-size:.82rem;font-weight:600;color:var(--muted);}
+    .btn{
+      padding:8px 16px; border-radius:var(--radius); font-family:'Poppins',sans-serif;
+      font-size:.82rem; font-weight:700; cursor:pointer; border:1px solid var(--border);
+      background:var(--surface-solid); color:var(--text); text-decoration:none; transition:all .15s;
+    }
+    .btn:hover{border-color:var(--accent);transform:translateY(-1px);}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:var(--bg);border:none;}
+    .btn-primary:hover{box-shadow:0 4px 18px rgba(247,166,0,.35);}
+    .btn-sm{padding:5px 12px;font-size:.75rem;}
+
+    /* ── Layout ── */
+    .shell{display:flex;min-height:calc(100vh - 64px);}
+
+    /* ── Sidebar ── */
+    .sidebar{
+      width:var(--sidebar-w); flex-shrink:0; background:#0F141B;
+      border-right:1px solid var(--border); display:flex; flex-direction:column;
+      position:sticky; top:64px; height:calc(100vh - 64px); overflow-y:auto;
+    }
+    .sidebar-inner{padding:14px 12px;flex:1;}
+    .nav-title{color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin:14px 8px 6px;}
+    .nav-item{
+      display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:14px;
+      font-size:.83rem; font-weight:600; color:var(--muted); cursor:pointer;
+      border:1px solid transparent; width:100%; background:none; text-align:left; transition:all .15s;
+    }
+    .nav-item svg{flex-shrink:0;}
+    .nav-item:hover{background:rgba(247,166,0,.06);border-color:rgba(247,166,0,.2);color:var(--text);}
+    .nav-item.active{background:rgba(247,166,0,.1);border-color:rgba(247,166,0,.35);color:var(--accent);}
+    .sidebar-user{
+      padding:14px 12px; border-top:1px solid var(--border);
+      display:flex; align-items:center; gap:10px;
+    }
+    .sidebar-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;}
+    .sidebar-name{font-size:.78rem;font-weight:700;}
+    .sidebar-role{font-size:.64rem;color:var(--dim);}
+
+    /* Backdrop + mobile drawer */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:70;}
+    .backdrop.active{opacity:1;pointer-events:auto;}
+
+    /* ── Main ── */
+    .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+    .content{padding:22px 24px 52px;flex:1;}
+
+    /* ── Section visibility ── */
+    .tab-section{display:none;}
+    .tab-section.active{display:block;}
+
+    /* ── Welcome card ── */
+    .welcome-card{
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:24px 28px; margin-bottom:18px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    }
+    .welcome-left{display:flex;align-items:center;gap:20px;}
+    .profile-avatar{
+      width:88px; height:88px; border-radius:50%; object-fit:cover;
+      border:3px solid var(--accent); box-shadow:0 0 18px rgba(247,166,0,.28); flex-shrink:0;
+    }
+    .welcome-text h2{font-size:1.2rem;font-weight:700;}
+    .welcome-text p{font-size:.8rem;color:var(--muted);font-weight:300;margin-top:3px;}
+    .loan-badge{
+      background:rgba(247,166,0,.07); border:1px solid rgba(247,166,0,.28);
+      border-radius:14px; padding:16px 24px; text-align:center;
+    }
+    .loan-badge .label{
+      font-size:.67rem; color:var(--muted); text-transform:uppercase; letter-spacing:.6px;
+      display:flex; align-items:center; justify-content:center; gap:5px;
+    }
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:livepulse 1.6s ease-in-out infinite;flex-shrink:0;}
+    @keyframes livepulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.7);}}
+    .loan-badge .value{font-size:1.5rem;font-weight:700;color:var(--accent);margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
+    .loan-badge .currency{font-size:.68rem;color:var(--muted);margin-top:2px;font-weight:600;}
+
+    /* ── Tickers ── */
+    .tickers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+    .ticker-card{
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:16px 18px; cursor:pointer; transition:border-color .15s;
+    }
+    .ticker-card:hover{border-color:var(--accent);}
+    .ticker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+    .ticker-pair{font-size:.72rem;color:var(--muted);font-weight:600;}
+    .ticker-tag{font-size:.65rem;padding:3px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--border);color:var(--muted);}
+    .ticker-price{font-size:1.2rem;font-weight:700;font-variant-numeric:tabular-nums;}
+    .ticker-chg{font-size:.72rem;font-weight:700;margin-top:3px;}
+    .up{color:var(--green);} .dn{color:var(--red);}
+    @keyframes flashGreen{0%{background:rgba(22,199,132,.18);}100%{background:transparent;}}
+    @keyframes flashRed{0%{background:rgba(234,57,67,.18);}100%{background:transparent;}}
+    .flash-green{animation:flashGreen .5s ease;}
+    .flash-red{animation:flashRed .5s ease;}
+
+    /* ── Chart + quick ── */
+    .chart-row{display:grid;grid-template-columns:1.4fr .6fr;gap:14px;margin-bottom:18px;}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .panel-head{
+      padding:13px 18px; border-bottom:1px solid var(--border); font-size:.85rem; font-weight:700;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    }
+    .panel-head .sub{color:var(--accent);}
+    .pair-pills{display:flex;gap:5px;flex-wrap:wrap;}
+    .pair-pill{
+      padding:4px 10px; border-radius:999px; font-size:.68rem; font-weight:700; cursor:pointer;
+      border:1px solid var(--border); background:var(--surface-solid); color:var(--muted); transition:all .15s;
+    }
+    .pair-pill:hover,.pair-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(247,166,0,.08);}
+    #tv-chart{height:360px;}
+
+    /* Quick panel */
+    .quick-list{padding:16px;display:flex;flex-direction:column;gap:8px;}
+    .quick-item{
+      display:flex; align-items:center; gap:12px; padding:11px 13px;
+      border-radius:12px; background:rgba(255,255,255,.02); border:1px solid var(--border);
+      cursor:pointer; transition:border-color .15s;
+    }
+    .quick-item:hover{border-color:var(--accent);}
+    .quick-icon{width:34px;height:34px;border-radius:10px;background:rgba(247,166,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .quick-label{font-size:.8rem;font-weight:700;}
+    .quick-sub{font-size:.65rem;color:var(--muted);margin-top:1px;}
+
+    /* ── Markets table ── */
+    .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    table{width:100%;border-collapse:collapse;min-width:500px;}
+    th{
+      padding:10px 12px; font-size:.68rem; font-weight:700; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.5px; text-align:left; border-bottom:1px solid var(--border);
+    }
+    th.sortable{cursor:pointer;user-select:none;}
+    th.sortable:hover{color:var(--text);}
+    .sort-ind{margin-left:4px;font-size:.65rem;}
+    td{padding:11px 12px;font-size:.8rem;border-bottom:1px solid rgba(31,41,55,.5);vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:rgba(247,166,0,.04);}
+    tr.row-active td{background:rgba(247,166,0,.08) !important;}
+    td img.coin-img{width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:7px;}
+
+    /* ── Account summary ── */
+    .acct-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .acct-stat{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+    .acct-stat-label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+    .acct-stat-value{font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text);}
+    .acct-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.68rem;font-weight:700;background:rgba(22,199,132,.1);border:1px solid rgba(22,199,132,.3);color:var(--green);}
+    .acct-stat-clickable{cursor:pointer;transition:border-color .15s,background .15s;}
+    .acct-stat-clickable:hover{border-color:var(--accent);background:rgba(247,166,0,.05);}
+
+    /* Loan limit info popup */
+    .ll-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(5px);z-index:400;display:none;}
+    .ll-backdrop.show{display:block;}
+    .ll-popup{
+      display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:min(420px,93vw);background:var(--surface-solid);border:1px solid var(--border);
+      border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.7);z-index:401;padding:28px 26px;
+      animation:lmoIn .2s ease both;
+    }
+    .ll-popup.show{display:block;}
+    .ll-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .ll-popup-title{font-size:1rem;font-weight:700;}
+    .ll-popup-close{background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+    .ll-popup-close:hover{border-color:var(--red);color:var(--red);}
+    .ll-amount{font-size:2rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;margin:6px 0 14px;}
+    .ll-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(31,41,55,.5);font-size:.8rem;}
+    .ll-row:last-of-type{border-bottom:none;}
+    .ll-row span:first-child{color:var(--muted);}
+    .ll-row span:last-child{font-weight:700;}
+    .ll-note{margin-top:14px;padding:11px 14px;border-radius:12px;background:rgba(247,166,0,.06);border:1px solid rgba(247,166,0,.2);font-size:.75rem;color:#FDE68A;line-height:1.55;}
+
+    /* ── Assets tab ── */
+    .assets-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+    .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;}
+    .summary-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+    .summary-value{font-size:1.6rem;font-weight:800;margin-top:6px;color:var(--accent);font-variant-numeric:tabular-nums;}
+    .summary-note{font-size:.68rem;color:var(--dim);margin-top:3px;}
+
+    /* ── Deposit / Withdraw ── */
+    .dw-wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;}
+    .dw-left{flex:1;min-width:260px;}
+    .dw-right{width:230px;}
+    .field-lbl{display:block;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:12px;}
+    .field-lbl:first-child{margin-top:0;}
+    .inp,.sel{
+      width:100%; padding:11px 14px; border-radius:12px; border:1px solid var(--border);
+      background:var(--surface-solid); color:var(--text); font-family:'Poppins',sans-serif;
+      font-size:.85rem; font-weight:600; outline:none; transition:border-color .2s;
+    }
+    .inp:focus,.sel:focus{border-color:rgba(247,166,0,.5);}
+    .inp[readonly]{cursor:default;background:#0F141B;color:var(--accent);font-size:.75rem;font-family:monospace;}
+    .notice{
+      margin-top:12px; padding:12px 14px; border-radius:14px;
+      border:1px solid rgba(247,166,0,.25); background:rgba(247,166,0,.06);
+      color:#FDE68A; font-size:.78rem; line-height:1.45;
+    }
+    .ack-row{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:rgba(18,24,38,.7);}
+    .ack-row input{margin-top:3px;accent-color:var(--accent);}
+    .ack-row label{font-size:.78rem;line-height:1.4;}
+    .ack-row small{display:block;color:var(--muted);margin-top:4px;font-size:.7rem;}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+    .mini{padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:rgba(18,24,38,.75);}
+    .mini .k{color:var(--muted);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+    .mini .v{margin-top:5px;font-weight:800;font-size:.9rem;}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.7rem;border:1px solid var(--border);background:var(--bg);color:var(--muted);}
+    .pill.pending{border-color:rgba(247,166,0,.35);color:#FDE68A;background:rgba(247,166,0,.08);}
+    .pill.confirmed{border-color:rgba(22,199,132,.35);color:#A7F3D0;background:rgba(22,199,132,.08);}
+    .pill.failed{border-color:rgba(234,57,67,.35);color:#FCA5A5;background:rgba(234,57,67,.08);}
+
+    /* ── Empty state ── */
+    .empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:.85rem;}
+    .empty-state svg{opacity:.3;display:block;margin:0 auto 12px;}
+
+    /* ── Loading overlay ── */
+    .loading-overlay{display:none;position:fixed;inset:0;background:rgba(11,14,17,.88);backdrop-filter:blur(6px);z-index:1000;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+    .loading-overlay.show{display:flex;}
+    .spinner{width:48px;height:48px;border-radius:50%;border:3px solid rgba(247,166,0,.15);border-top-color:var(--accent);animation:spin .75s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-text{font-size:.9rem;font-weight:600;color:var(--muted);}
+    .loading-dots::after{content:'';animation:dots 1.4s steps(4,end) infinite;}
+    @keyframes dots{0%{content:'';}25%{content:'.';}50%{content:'..';}75%{content:'...'}}
+
+    /* ── Logout confirmation ── */
+    .logout-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);z-index:300;display:none;}
+    .logout-backdrop.show{display:block;}
+    .logout-modal{
+      display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:min(360px,92vw);background:var(--surface-solid);border:1px solid var(--border);
+      border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.7);z-index:301;
+      padding:32px 28px;text-align:center;
+      animation:lmoIn .22s ease both;
+    }
+    @keyframes lmoIn{from{opacity:0;transform:translate(-50%,-54%) scale(.96);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+    .logout-modal.show{display:block;}
+    .logout-icon{width:56px;height:56px;border-radius:50%;background:rgba(247,166,0,.1);border:1px solid rgba(247,166,0,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+    .logout-modal h3{font-size:1.05rem;font-weight:700;margin-bottom:8px;}
+    .logout-modal p{font-size:.82rem;color:var(--muted);line-height:1.55;}
+    .logout-actions{display:flex;gap:10px;margin-top:24px;}
+    .logout-cancel{flex:1;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--surface-solid);color:var(--muted);font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:border-color .15s;}
+    .logout-cancel:hover{border-color:var(--accent);}
+    .logout-confirm{flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent-light));color:var(--bg);font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:box-shadow .15s;}
+    .logout-confirm:hover{box-shadow:0 4px 16px rgba(247,166,0,.4);}
+
+    /* ── Responsive ── */
+    @media(max-width:1050px){
+      .sidebar{display:none;position:fixed;top:64px;left:0;height:calc(100vh - 64px);z-index:80;transform:translateX(-110%);transition:transform .22s ease;box-shadow:18px 0 60px rgba(0,0,0,.55);}
+      .sidebar.open{display:flex;transform:translateX(0);}
+      .menu-btn{display:inline-flex;}
+      .tickers{grid-template-columns:repeat(2,1fr);}
+      .chart-row{grid-template-columns:1fr;}
+      .assets-summary{grid-template-columns:1fr;}
+    }
+    @media(max-width:600px){
+      .content{padding:16px 14px 40px;}
+      .tickers{grid-template-columns:repeat(2,1fr);}
+      .welcome-card{flex-direction:column;align-items:flex-start;}
+      .info-grid{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Logging you out<span class="loading-dots"></span></div>
+</div>
+
+<!-- Logout confirmation modal -->
+<div class="logout-backdrop" id="logoutBackdrop"></div>
+<div class="logout-modal" id="logoutModal">
+  <div class="logout-icon">
+    <svg width="28" height="28" fill="none" stroke="#F7A600" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  </div>
+  <h3>Log Out?</h3>
+  <p>Are you sure you want to log out of your Kinetix account?</p>
+  <div class="logout-actions">
+    <button class="logout-cancel" onclick="cancelLogout()">Cancel</button>
+    <button class="logout-confirm" onclick="doLogout()">Yes, Log Out</button>
+  </div>
+</div>
+
+<!-- Loan Limit Info Popup -->
+<div class="ll-backdrop" id="llBackdrop" onclick="closeLLPopup()"></div>
+<div class="ll-popup" id="llPopup">
+  <div class="ll-popup-head">
+    <div class="ll-popup-title">Your Loan Limit</div>
+    <button class="ll-popup-close" onclick="closeLLPopup()">&times;</button>
+  </div>
+  <div class="ll-amount" id="ll-amount-display">CA$0</div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;font-size:.83rem;border-bottom:1px solid var(--border);padding-bottom:8px;">
+      <span style="color:var(--muted);">Max Borrowable</span>
+      <span id="ll-max-display" style="font-weight:700;">CA$0</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.83rem;border-bottom:1px solid var(--border);padding-bottom:8px;">
+      <span style="color:var(--muted);">Starting APR</span>
+      <span style="font-weight:700;color:var(--green);">3.90%</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.83rem;border-bottom:1px solid var(--border);padding-bottom:8px;">
+      <span style="color:var(--muted);">Eligible Assets</span>
+      <span style="font-weight:700;">BTC, ETH, SOL &amp; more</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.83rem;">
+      <span style="color:var(--muted);">Repayment Terms</span>
+      <span style="font-weight:700;">3 – 36 months</span>
+    </div>
+  </div>
+  <div style="background:rgba(247,166,0,.08);border:1px solid rgba(247,166,0,.2);border-radius:12px;padding:12px 14px;font-size:.77rem;color:var(--muted);line-height:1.6;">
+    Your loan limit is determined by Kinetix based on your account standing, collateral assets, and activity history. Limits are reviewed periodically and may be adjusted by an administrator.
+  </div>
+  <button class="btn btn-primary" style="width:100%;margin-top:18px;" onclick="closeLLPopup();openLoanModal();">Apply for a Loan</button>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<!-- Topbar -->
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu">
+    <div class="menu-icon"><span></span><span></span><span></span></div>
+  </button>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <div class="brand-text">Kinetix Exchange Loan</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-sm" onclick="confirmLogout()">Log Out</button>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="nav-title">Account</div>
+      <button class="nav-item active" data-tab="overview" onclick="switchTab('overview',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Overview
+      </button>
+      <button class="nav-item" data-tab="assets" onclick="switchTab('assets',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Assets
+      </button>
+      <button class="nav-item" data-tab="deposit" onclick="switchTab('deposit',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14m-7-7 7 7 7-7"/></svg>
+        Deposit
+      </button>
+      <button class="nav-item" data-tab="withdraw" onclick="switchTab('withdraw',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19V5m7 7-7-7-7 7"/></svg>
+        Withdraw
+      </button>
+      <button class="nav-item" data-tab="history" onclick="switchTab('history',this)">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
+        History
+      </button>
+      {% if user.is_admin %}
+      <div class="nav-title">Admin</div>
+      <button class="nav-item" onclick="window.location='/admin'">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2"/><path d="M12 8v4m0 4h.01"/></svg>
+        Admin Panel
+      </button>
+      {% endif %}
+    </div>
+    <div class="sidebar-user">
+      <img class="sidebar-avatar" src="{{ url_for('static', filename='driver.jpg') }}" alt="Avatar" />
+      <div>
+        <div class="sidebar-name">{{ user.firstname }} {{ user.lastname }}</div>
+        <div class="sidebar-role">Member</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="content">
+
+      <!-- ══════════ OVERVIEW ══════════ -->
+      <div id="tab-overview" class="tab-section active">
+
+        <!-- Welcome + loan limit -->
+        <div class="welcome-card">
+          <div class="welcome-left">
+            <img class="profile-avatar" src="{{ url_for('static', filename='driver.jpg') }}" alt="Profile" />
+            <div class="welcome-text">
+              <h2>Welcome back, {{ user.firstname }} 👋</h2>
+            </div>
+          </div>
+          <div class="loan-badge" onclick="openLoanModal()" style="cursor:pointer;" title="Click to apply for a loan">
+            <div class="label"><span class="live-dot"></span>Loan Limit</div>
+            <div class="value" id="loan-limit-display" data-target="{{ user.loan_limit | int }}">CA$0</div>
+            <div class="currency">Canadian Dollar (CAD)</div>
+            <div style="font-size:.65rem;color:var(--accent);margin-top:6px;font-weight:700;letter-spacing:.3px;">TAP TO APPLY →</div>
+          </div>
+        </div>
+
+        <!-- Tickers -->
+        <div class="tickers">
+          <div class="ticker-card" id="card-btc" data-tv="BINANCE:BTCUSDT">
+            <div class="ticker-top"><div class="ticker-pair">BTC/USDT</div><div class="ticker-tag">Live</div></div>
+            <div class="ticker-price" id="px-btc">—</div>
+            <div class="ticker-chg" id="chg-btc">—</div>
+          </div>
+          <div class="ticker-card" id="card-eth" data-tv="BINANCE:ETHUSDT">
+            <div class="ticker-top"><div class="ticker-pair">ETH/USDT</div><div class="ticker-tag">Live</div></div>
+            <div class="ticker-price" id="px-eth">—</div>
+            <div class="ticker-chg" id="chg-eth">—</div>
+          </div>
+          <div class="ticker-card" id="card-sol" data-tv="BINANCE:SOLUSDT">
+            <div class="ticker-top"><div class="ticker-pair">SOL/USDT</div><div class="ticker-tag">Live</div></div>
+            <div class="ticker-price" id="px-sol">—</div>
+            <div class="ticker-chg" id="chg-sol">—</div>
+          </div>
+          <div class="ticker-card" id="card-xrp" data-tv="BINANCE:XRPUSDT">
+            <div class="ticker-top"><div class="ticker-pair">XRP/USDT</div><div class="ticker-tag">Live</div></div>
+            <div class="ticker-price" id="px-xrp">—</div>
+            <div class="ticker-chg" id="chg-xrp">—</div>
+          </div>
+        </div>
+
+        <!-- Chart + quick actions -->
+        <div class="chart-row">
+          <div class="panel">
+            <div class="panel-head">
+              <span>Live Chart</span>
+              <div class="pair-pills" id="pair-pills">
+                <button class="pair-pill active" data-tv="BINANCE:BTCUSDT">BTC</button>
+                <button class="pair-pill" data-tv="BINANCE:ETHUSDT">ETH</button>
+                <button class="pair-pill" data-tv="BINANCE:SOLUSDT">SOL</button>
+                <button class="pair-pill" data-tv="BINANCE:BNBUSDT">BNB</button>
+                <button class="pair-pill" data-tv="BINANCE:XRPUSDT">XRP</button>
+                <button class="pair-pill" data-tv="BINANCE:DOGEUSDT">DOGE</button>
+                <button class="pair-pill" data-tv="FX_IDC:CADUSD">CAD</button>
+              </div>
+            </div>
+            <div id="tv-chart"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><span>Account Summary</span></div>
+            <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px;">
+
+              <div class="acct-stat-row">
+                <div class="acct-stat acct-stat-clickable" onclick="showLoanLimitInfo()" title="About your loan limit">
+                  <div class="acct-stat-label">Loan Limit <span style="font-size:.6rem;color:var(--accent);">ⓘ</span></div>
+                  <div class="acct-stat-value" id="acct-loan-limit">CA$0</div>
+                </div>
+                <div class="acct-stat acct-stat-clickable" onclick="switchTab('assets',document.querySelector('[data-tab=assets]'))" title="View your assets">
+                  <div class="acct-stat-label">Portfolio Value <span style="font-size:.6rem;color:var(--accent);">→</span></div>
+                  <div class="acct-stat-value" id="acct-portfolio">CA$0</div>
+                </div>
+              </div>
+
+              <div class="acct-stat-row">
+                <div class="acct-stat">
+                  <div class="acct-stat-label">Starting APR</div>
+                  <div class="acct-stat-value" style="color:var(--green);">3.9%</div>
+                </div>
+                <div class="acct-stat">
+                  <div class="acct-stat-label">Status</div>
+                  <div class="acct-stat-value"><span class="acct-badge">Active</span></div>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--border);padding-top:12px;">
+                <div class="acct-stat-label" style="margin-bottom:8px;">Member</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <img src="{{ url_for('static', filename='driver.jpg') }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
+                  <div>
+                    <div style="font-size:.82rem;font-weight:700;">{{ user.firstname }} {{ user.lastname }}</div>
+                    <div style="font-size:.68rem;color:var(--muted);">@{{ user.username }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" style="width:100%;padding:11px;border-radius:14px;font-size:.85rem;" onclick="openLoanModal()">
+                Apply for a Loan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Markets overview table -->
+        <div class="panel">
+          <div class="panel-head"><span>Markets Overview</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th class="sortable" data-k="price">Price<span class="sort-ind" id="ind-price"></span></th>
+                  <th>24h High</th>
+                  <th>24h Low</th>
+                  <th class="sortable" data-k="change">Change<span class="sort-ind" id="ind-change"></span></th>
+                  <th class="sortable" data-k="total_volume">Volume<span class="sort-ind" id="ind-total_volume"></span></th>
+                </tr>
+              </thead>
+              <tbody id="mkt-body"><tr><td colspan="6" style="color:var(--muted);padding:20px;">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ ASSETS ══════════ -->
+      <div id="tab-assets" class="tab-section">
+        <div class="assets-summary">
+          <div class="summary-card">
+            <div class="summary-label">Total Portfolio Value</div>
+            <div class="summary-value" id="total-assets">CA$0</div>
+            <div class="summary-note">Sum of all your holdings</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">CAD Available</div>
+            <div class="summary-value" id="avail-balance">CA$0</div>
+            <div class="summary-note">Liquid CAD balance</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>Portfolio Breakdown</span><span class="sub">Assets</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Coin</th><th style="text-align:right;">Balance</th><th style="text-align:right;">Price (USD)</th><th style="text-align:right;">Value (USD)</th><th style="text-align:right;">Value (CAD)</th></tr></thead>
+              <tbody id="asset-body"><tr><td colspan="5" style="color:var(--muted);padding:20px;">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ DEPOSIT ══════════ -->
+      <div id="tab-deposit" class="tab-section">
+        <div class="panel">
+          <div class="panel-head"><span>Deposit Crypto</span><span class="sub">Address</span></div>
+          <div style="padding:22px;">
+            <div class="dw-wrap">
+              <div class="dw-left">
+                <label class="field-lbl">Coin</label>
+                <select class="sel" id="dep-coin" onchange="onDepCoinChange()">
+                  <option value="USDT">USDT — Tether</option>
+                  <option value="USDC">USDC — USD Coin</option>
+                  <option value="BTC">BTC — Bitcoin</option>
+                  <option value="ETH">ETH — Ethereum</option>
+                  <option value="BNB">BNB — BNB</option>
+                  <option value="SOL">SOL — Solana</option>
+                  <option value="XRP">XRP — XRP</option>
+                  <option value="TRX">TRX — TRON</option>
+                  <option value="LTC">LTC — Litecoin</option>
+                  <option value="DOGE">DOGE — Dogecoin</option>
+                  <option value="CAD">CAD — CAD Coin</option>
+                </select>
+                <label class="field-lbl">Network</label>
+                <select class="sel" id="dep-network" onchange="onDepNetworkChange()"></select>
+                <div class="notice" id="dep-warning">Select a coin and network to see deposit instructions.</div>
+                <div class="info-grid">
+                  <div class="mini"><div class="k">Min Deposit</div><div class="v" id="dep-min">—</div></div>
+                  <div class="mini"><div class="k">Confirmations</div><div class="v" id="dep-conf">—</div></div>
+                </div>
+                <div class="mini" style="margin-top:10px;">
+                  <div class="k">Status flow</div>
+                  <div style="margin-top:6px;font-size:.72rem;color:var(--muted);">
+                    <span class="pill pending">Pending</span> → confirmations complete → <span class="pill confirmed">Confirmed</span>
+                  </div>
+                </div>
+                <div class="ack-row">
+                  <input type="checkbox" id="dep-ack" onchange="onDepAckChange()" />
+                  <div>
+                    <label for="dep-ack">I understand sending to the wrong address or network may result in permanent loss.</label>
+                    <small>Always verify the coin and network match before sending.</small>
+                  </div>
+                </div>
+                <label class="field-lbl">Deposit Address</label>
+                <input class="inp" id="dep-address" readonly value="Check the box above to reveal address" />
+                <p style="font-size:.7rem;color:var(--dim);margin-top:8px;" id="dep-note">Accept the risk warning to view your deposit address.</p>
+              </div>
+              <div class="dw-right">
+                <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">QR Code</div>
+                <img id="dep-qr" src="{{ url_for('static', filename='QR.jpeg') }}" alt="QR" style="width:200px;height:200px;border-radius:14px;display:none;" />
+                <div id="dep-qr-placeholder" style="width:200px;height:200px;border-radius:14px;background:var(--surface-solid);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;">
+                  Reveal address first
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ WITHDRAW ══════════ -->
+      <div id="tab-withdraw" class="tab-section">
+        <div class="panel">
+          <div class="panel-head"><span>Withdraw Crypto</span><span class="sub">Send</span></div>
+          <div style="padding:22px;">
+            <div class="dw-wrap">
+              <div class="dw-left">
+                <label class="field-lbl">Coin</label>
+                <select class="sel" id="wd-coin" onchange="onWdCoinChange()">
+                  <option value="USDT">USDT — Tether</option>
+                  <option value="USDC">USDC — USD Coin</option>
+                  <option value="BTC">BTC — Bitcoin</option>
+                  <option value="ETH">ETH — Ethereum</option>
+                  <option value="BNB">BNB — BNB</option>
+                  <option value="SOL">SOL — Solana</option>
+                  <option value="XRP">XRP — XRP</option>
+                  <option value="TRX">TRX — TRON</option>
+                  <option value="LTC">LTC — Litecoin</option>
+                  <option value="DOGE">DOGE — Dogecoin</option>
+                  <option value="CAD">CAD — CAD Coin</option>
+                </select>
+                <label class="field-lbl">Network</label>
+                <select class="sel" id="wd-network" onchange="onWdNetworkChange()"></select>
+                <div class="notice">Double-check address and network. Withdrawals sent to the wrong chain cannot be recovered.</div>
+                <label class="field-lbl">Recipient Address</label>
+                <input class="inp" id="wd-address" placeholder="Paste destination wallet address" />
+                <label class="field-lbl">Amount</label>
+                <div style="display:flex;gap:8px;margin-top:0;">
+                  <input class="inp" id="wd-amount" type="number" step="any" min="0" placeholder="0.00" style="flex:1;" />
+                  <button class="btn btn-sm" type="button" onclick="setMaxWithdraw()">Max</button>
+                </div>
+                <div class="info-grid" style="margin-top:10px;">
+                  <div class="mini"><div class="k">Min Withdrawal</div><div class="v" id="wd-min">—</div></div>
+                  <div class="mini"><div class="k">Est. Fee</div><div class="v" id="wd-fee">—</div></div>
+                </div>
+                <div class="ack-row">
+                  <input type="checkbox" id="wd-ack" onchange="onWdAckChange()" />
+                  <div>
+                    <label for="wd-ack">I confirm the address and network are correct.</label>
+                    <small>Withdrawals are irreversible once broadcast.</small>
+                  </div>
+                </div>
+                <button class="btn btn-primary" id="wd-submit" disabled type="button" style="width:100%;margin-top:14px;padding:12px;" onclick="submitWithdraw()">Withdraw</button>
+              </div>
+              <div class="dw-right">
+                <div class="mini"><div class="k">Available</div><div class="v" id="wd-avail">—</div></div>
+                <div class="mini" style="margin-top:10px;"><div class="k">Processing Time</div><div class="v" id="wd-time">—</div></div>
+                <div class="mini" style="margin-top:10px;"><div class="k">Daily Limit</div><div class="v">Unlimited</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ HISTORY ══════════ -->
+      <div id="tab-history" class="tab-section">
+        <div class="panel">
+          <div class="panel-head"><span>Transaction History</span></div>
+          <div class="empty-state">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
+            No transactions yet.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LOAN APPLICATION MODAL ══════════ -->
+<div class="loan-modal-backdrop" id="loanModalBackdrop" onclick="closeLoanModal()"></div>
+<div class="loan-modal" id="loanModal" role="dialog" aria-modal="true" aria-labelledby="loanModalTitle">
+  <div class="lm-header">
+    <div>
+      <div class="lm-title" id="loanModalTitle">Loan Application</div>
+      <div class="lm-subtitle">Fill in the details below to apply for a crypto-backed loan.</div>
+    </div>
+    <button class="lm-close" onclick="closeLoanModal()" aria-label="Close">&times;</button>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="lm-steps">
+    <div class="lm-step active" id="step-dot-1"><span>1</span> Loan Details</div>
+    <div class="lm-step-line"></div>
+    <div class="lm-step" id="step-dot-2"><span>2</span> Review &amp; Submit</div>
+  </div>
+
+  <div class="lm-body">
+
+    <!-- ── STEP 1: Loan Details ── -->
+    <div class="lm-step-section active" id="lm-step-1">
+      <div class="lm-grid-2">
+        <div class="lm-field">
+          <label>Loan Amount (CAD) <span class="req">*</span></label>
+          <input class="lm-inp" id="ln-amount" type="number" min="500" step="100" placeholder="e.g. 50000" oninput="loanCalc()" />
+          <div class="lm-hint" id="ln-amount-hint"></div>
+        </div>
+        <div class="lm-field">
+          <label>Loan Term <span class="req">*</span></label>
+          <select class="lm-inp" id="ln-term" onchange="loanCalc()">
+            <option value="">Select term</option>
+            <option value="30">30 Days</option>
+            <option value="60">60 Days</option>
+            <option value="90">90 Days</option>
+            <option value="180">6 Months</option>
+            <option value="365">12 Months</option>
+            <option value="730">24 Months</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="lm-field" style="margin-top:14px;">
+        <label>Loan-to-Value (LTV) Ratio <span class="req">*</span></label>
+        <div class="ltv-pills" id="ltv-pills">
+          <button type="button" class="ltv-pill" data-ltv="0.5" onclick="selectLTV(this)">
+            50% LTV<span>3.9% APR</span>
+          </button>
+          <button type="button" class="ltv-pill" data-ltv="0.65" onclick="selectLTV(this)">
+            65% LTV<span>6.5% APR</span>
+          </button>
+          <button type="button" class="ltv-pill active" data-ltv="0.75" onclick="selectLTV(this)">
+            75% LTV<span>9.9% APR</span>
+          </button>
+        </div>
+        <div class="lm-hint">Lower LTV = lower interest rate and lower liquidation risk.</div>
+      </div>
+
+      <div class="lm-field" style="margin-top:14px;">
+        <label>Purpose of Loan <span class="req">*</span></label>
+        <select class="lm-inp" id="ln-purpose">
+          <option value="">Select purpose</option>
+          <option>Business Expansion</option>
+          <option>Real Estate Investment</option>
+          <option>Debt Consolidation</option>
+          <option>Trading / Investment</option>
+          <option>Personal Expenses</option>
+          <option>Vehicle Purchase</option>
+          <option>Education</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="lm-field" style="margin-top:14px;">
+        <label>Repayment Preference <span class="req">*</span></label>
+        <select class="lm-inp" id="ln-repay">
+          <option value="">Select preference</option>
+          <option value="monthly">Monthly Instalments</option>
+          <option value="bullet">Bullet (lump sum at end)</option>
+          <option value="interest">Interest-only, principal at end</option>
+        </select>
+      </div>
+
+      <div id="lm-error-1" style="display:none;" class="lm-error-msg"></div>
+      <button class="lm-btn-next" onclick="lmNext(1)">Review Application →</button>
+    </div>
+
+    <!-- ── STEP 2: Review & Submit ── -->
+    <div class="lm-step-section" id="lm-step-2">
+      <div class="lm-review" id="lm-review-block"></div>
+
+      <div class="lm-field" style="margin-top:16px;">
+        <label>Full Legal Name <span class="req">*</span></label>
+        <input class="lm-inp" id="ln-legal-name" type="text" placeholder="As it appears on your ID" value="{{ user.firstname }} {{ user.lastname }}" />
+      </div>
+
+      <div class="lm-field" style="margin-top:12px;">
+        <label>Email Address <span class="req">*</span></label>
+        <input class="lm-inp" id="ln-email" type="email" placeholder="your@email.com" value="{{ user.email or '' }}" />
+      </div>
+
+      <div class="lm-field" style="margin-top:12px;">
+        <label>Additional Notes <span style="color:var(--dim);">(optional)</span></label>
+        <textarea class="lm-inp" id="ln-notes" rows="3" placeholder="Any additional information for the loan officer…" style="resize:vertical;"></textarea>
+      </div>
+
+      <div class="lm-ack">
+        <input type="checkbox" id="ln-terms" />
+        <label for="ln-terms">
+          I confirm that the information provided is accurate and I agree to the
+          <a href="/about" target="_blank" style="color:var(--accent);">Terms of Use, Interest Policy &amp; Loan Agreement</a>.
+        </label>
+      </div>
+
+      <div id="lm-error" style="display:none;" class="lm-error-msg"></div>
+
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button class="lm-btn-back" onclick="lmBack(2)">← Back</button>
+        <button class="lm-btn-next" id="lm-submit-btn" onclick="submitLoanApp()" style="flex:1;">Submit Application</button>
+      </div>
+    </div>
+
+    <!-- ── PROCESSING ── -->
+    <div class="lm-step-section" id="lm-step-processing">
+      <div class="lm-processing">
+        <div class="lm-spinner"></div>
+        <div class="lm-processing-text">Processing your application<span class="lm-dots"></span></div>
+        <div class="lm-processing-sub">Please wait while we review your details.</div>
+      </div>
+    </div>
+
+    <!-- ── TAX NOTICE ── -->
+    <div class="lm-step-section" id="lm-step-tax">
+      <div class="lm-success">
+        <div class="lm-success-icon" style="background:rgba(247,166,0,.12);border-color:rgba(247,166,0,.4);">
+          <svg width="26" height="26" fill="none" stroke="#F7A600" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        </div>
+        <h3>Action Required</h3>
+        <p>Your loan application has been received and approved in principle.</p>
+        <div class="lm-tax-box">
+          <div class="lm-tax-label">Withholding Tax Required (10%)</div>
+          <div class="lm-tax-amount" id="lm-tax-amount">CA$0.00</div>
+          <div class="lm-tax-note">
+            To release your loan funds, a <strong>10% withholding tax deposit</strong> of the approved loan amount must be received before disbursement. This is a regulatory requirement and is fully refundable if your application is declined.
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--dim);margin-top:14px;line-height:1.55;">Please proceed to the <strong style="color:var(--accent);">Deposit</strong> tab and send the exact amount shown above to complete your application. Our team will confirm receipt within 24 hours.</p>
+        <button class="lm-btn-next" style="margin-top:20px;width:100%;" onclick="closeLoanModal();switchTab('deposit',document.querySelector('[data-tab=deposit]'))">Go to Deposit →</button>
+        <button class="lm-btn-back" style="width:100%;margin-top:8px;" onclick="closeLoanModal()">Close</button>
+      </div>
+    </div>
+
+    <!-- ── SUCCESS (shown after tax notice is acknowledged) ── -->
+    <div class="lm-step-section" id="lm-step-success">
+      <div class="lm-success">
+        <div class="lm-success-icon">✓</div>
+        <h3>Application Approved!</h3>
+        <p>Your loan application has been received and successfully approved.</p>
+        <button class="lm-btn-next" style="margin-top:22px;width:100%;" onclick="closeLoanModal()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* ── Loan modal ── */
+  .loan-modal-backdrop{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.7);
+    backdrop-filter:blur(6px); z-index:200;
+  }
+  .loan-modal-backdrop.show{display:block;}
+  .loan-modal{
+    display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(680px,96vw); max-height:90vh; overflow-y:auto;
+    background:var(--surface-solid); border:1px solid var(--border);
+    border-radius:22px; box-shadow:0 24px 60px rgba(0,0,0,.7);
+    z-index:201; flex-direction:column;
+  }
+  .loan-modal.show{display:flex;}
+
+  .lm-header{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:24px 26px 18px; border-bottom:1px solid var(--border); flex-shrink:0;
+  }
+  .lm-title{font-size:1.1rem;font-weight:700;}
+  .lm-subtitle{font-size:.75rem;color:var(--muted);margin-top:3px;}
+  .lm-close{
+    background:none; border:1px solid var(--border); color:var(--muted);
+    width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:1.1rem;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:all .15s;
+  }
+  .lm-close:hover{border-color:var(--red);color:var(--red);}
+
+  .lm-steps{
+    display:flex; align-items:center; padding:16px 26px;
+    border-bottom:1px solid var(--border); flex-shrink:0; gap:0;
+  }
+  .lm-step{
+    display:flex; align-items:center; gap:7px; font-size:.72rem; font-weight:700;
+    color:var(--dim); white-space:nowrap;
+  }
+  .lm-step span{
+    width:22px; height:22px; border-radius:50%; background:var(--surface-solid);
+    border:1px solid var(--border); display:inline-flex; align-items:center;
+    justify-content:center; font-size:.68rem; font-weight:800; flex-shrink:0;
+  }
+  .lm-step.active{color:var(--accent);}
+  .lm-step.active span{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+  .lm-step.done span{background:var(--green);color:var(--bg);border-color:var(--green);}
+  .lm-step.done{color:var(--green);}
+  .lm-step-line{flex:1;height:1px;background:var(--border);margin:0 8px;min-width:16px;}
+
+  .lm-body{padding:22px 26px 26px;overflow-y:auto;}
+  .lm-step-section{display:none;}
+  .lm-step-section.active{display:block;}
+
+  .lm-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .lm-field{display:flex;flex-direction:column;}
+  .lm-field label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .req{color:var(--accent);}
+  .lm-inp{
+    padding:11px 14px; border-radius:12px; border:1px solid var(--border);
+    background:#0F141B; color:var(--text); font-family:'Poppins',sans-serif;
+    font-size:.85rem; font-weight:600; outline:none; transition:border-color .2s;
+    width:100%;
+  }
+  .lm-inp:focus{border-color:rgba(247,166,0,.5);}
+  .lm-hint{font-size:.68rem;color:var(--dim);margin-top:5px;min-height:14px;}
+  .lm-hint.warn{color:var(--red);font-weight:600;}
+  .lm-readonly{
+    padding:11px 14px; border-radius:12px; border:1px solid var(--border);
+    background:#0B0E11; color:var(--accent); font-family:'Poppins',sans-serif;
+    font-size:.85rem; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+
+  /* LTV pills */
+  .ltv-pills{display:flex;gap:8px;flex-wrap:wrap;}
+  .ltv-pill{
+    flex:1; min-width:130px; padding:12px 14px; border-radius:14px;
+    border:1px solid var(--border); background:#0F141B; color:var(--muted);
+    cursor:pointer; font-family:'Poppins',sans-serif; font-size:.82rem; font-weight:700;
+    transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  .ltv-pill span{font-size:.68rem;font-weight:600;color:var(--dim);}
+  .ltv-pill:hover{border-color:rgba(247,166,0,.4);color:var(--text);}
+  .ltv-pill.active{border-color:var(--accent);background:rgba(247,166,0,.1);color:var(--accent);}
+  .ltv-pill.active span{color:rgba(247,166,0,.7);}
+
+  /* Summary bar */
+  .lm-summary-bar{
+    background:rgba(247,166,0,.07); border:1px solid rgba(247,166,0,.25);
+    border-radius:12px; padding:12px 16px; font-size:.8rem; color:#FDE68A;
+    line-height:1.5;
+  }
+
+  /* Breakdown */
+  .lm-breakdown{
+    margin-top:14px; border:1px solid var(--border); border-radius:14px; overflow:hidden;
+  }
+  .lm-breakdown-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 16px; font-size:.8rem; border-bottom:1px solid rgba(31,41,55,.5);
+  }
+  .lm-breakdown-row:last-child{border-bottom:none;}
+  .lm-breakdown-row span:first-child{color:var(--muted);}
+  .lm-breakdown-row span:last-child{font-weight:700;font-variant-numeric:tabular-nums;}
+  .lm-breakdown-row.accent span:last-child{color:var(--accent);font-size:.9rem;}
+
+  /* Review block */
+  .lm-review{
+    background:rgba(247,166,0,.05); border:1px solid rgba(247,166,0,.2);
+    border-radius:14px; padding:16px 18px; font-size:.8rem; line-height:2;
+  }
+  .lm-review strong{color:var(--accent);}
+
+  /* Ack */
+  .lm-ack{
+    display:flex; gap:10px; align-items:flex-start; margin-top:14px;
+    padding:13px 15px; border-radius:12px; border:1px solid var(--border);
+    background:rgba(18,24,38,.7);
+  }
+  .lm-ack input{margin-top:3px;accent-color:var(--accent);flex-shrink:0;}
+  .lm-ack label{font-size:.76rem;line-height:1.5;color:var(--muted);}
+
+  /* Buttons */
+  .lm-btn-next{
+    width:100%; padding:13px; border-radius:14px; border:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    color:var(--bg); font-family:'Poppins',sans-serif; font-size:.88rem;
+    font-weight:800; cursor:pointer; margin-top:18px; transition:box-shadow .15s;
+  }
+  .lm-btn-next:hover{box-shadow:0 6px 20px rgba(247,166,0,.4);}
+  .lm-btn-back{
+    padding:13px 20px; border-radius:14px; border:1px solid var(--border);
+    background:var(--surface-solid); color:var(--muted); font-family:'Poppins',sans-serif;
+    font-size:.82rem; font-weight:700; cursor:pointer; margin-top:18px; transition:border-color .15s;
+    white-space:nowrap;
+  }
+  .lm-btn-back:hover{border-color:var(--accent);}
+
+  /* Error */
+  .lm-error-msg{
+    margin-top:10px; padding:11px 14px; border-radius:12px;
+    border:1px solid rgba(234,57,67,.4); background:rgba(234,57,67,.08);
+    color:#FCA5A5; font-size:.78rem;
+  }
+
+  /* Processing */
+  .lm-processing{text-align:center;padding:40px 20px;}
+  .lm-spinner{
+    width:54px; height:54px; border-radius:50%;
+    border:3px solid rgba(247,166,0,.15); border-top-color:var(--accent);
+    animation:lmSpin .75s linear infinite; margin:0 auto 22px;
+  }
+  @keyframes lmSpin{to{transform:rotate(360deg);}}
+  .lm-processing-text{font-size:.95rem;font-weight:700;color:var(--text);}
+  .lm-processing-sub{font-size:.76rem;color:var(--muted);margin-top:8px;}
+  .lm-dots::after{content:'';animation:lmDots 1.4s steps(4,end) infinite;}
+  @keyframes lmDots{0%{content:'';}25%{content:'.';}50%{content:'..';}75%{content:'...'}}
+
+  /* Success */
+  .lm-success{text-align:center;padding:30px 10px;}
+  .lm-success-icon{
+    width:60px; height:60px; border-radius:50%;
+    background:rgba(22,199,132,.15); border:2px solid var(--green);
+    color:var(--green); font-size:1.6rem; display:flex; align-items:center;
+    justify-content:center; margin:0 auto 16px;
+    animation:lmPopIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes lmPopIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .lm-success h3{font-size:1.1rem;font-weight:700;margin-bottom:10px;}
+  .lm-success p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+
+  /* Tax notice box */
+  .lm-tax-box{
+    margin-top:16px; padding:18px 20px; border-radius:16px;
+    border:1px solid rgba(247,166,0,.35); background:rgba(247,166,0,.07);
+    text-align:center;
+  }
+  .lm-tax-label{font-size:.7rem;font-weight:700;color:rgba(247,166,0,.8);text-transform:uppercase;letter-spacing:.6px;}
+  .lm-tax-amount{font-size:2rem;font-weight:800;color:var(--accent);margin:8px 0;font-variant-numeric:tabular-nums;letter-spacing:-.5px;}
+  .lm-tax-note{font-size:.76rem;color:var(--muted);line-height:1.55;margin-top:8px;text-align:left;}
+  .lm-tax-note strong{color:var(--text);}
+
+  @media(max-width:560px){
+    .lm-grid-2{grid-template-columns:1fr;}
+    .lm-body{padding:18px;}
+    .lm-header{padding:18px 18px 14px;}
+    .lm-steps{padding:12px 18px;font-size:.65rem;}
+  }
+</style>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+(function () {
+
+  /* ═══ Loan limit count-up ═══ */
+  const loanEl = document.getElementById('loan-limit-display');
+  if (loanEl) {
+    const target = parseInt(loanEl.dataset.target, 10);
+    const t0 = performance.now();
+    const dur = 1800;
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+    function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      loanEl.textContent = 'CA$' + Math.round(easeOut(p) * target).toLocaleString('en-CA');
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ═══ Mobile drawer ═══ */
+  const sidebarEl  = document.getElementById('sidebar');
+  const backdropEl = document.getElementById('backdrop');
+  const menuBtn    = document.getElementById('menuBtn');
+  function openDrawer()  { sidebarEl.classList.add('open');    backdropEl.classList.add('active'); }
+  function closeDrawer() { sidebarEl.classList.remove('open'); backdropEl.classList.remove('active'); }
+  if (menuBtn)    menuBtn.addEventListener('click', () => sidebarEl.classList.contains('open') ? closeDrawer() : openDrawer());
+  if (backdropEl) backdropEl.addEventListener('click', closeDrawer);
+
+  /* ═══ Tab switching ═══ */
+  window.switchTab = function (name, btn) {
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    const sec = document.getElementById('tab-' + name);
+    if (sec) sec.classList.add('active');
+    document.querySelectorAll('.nav-item[data-tab]').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    closeDrawer();
+    if (name === 'assets')  loadAssets();
+    if (name === 'deposit') { buildNetworkOptions('dep-coin','dep-network'); onDepNetworkChange(); }
+    if (name === 'withdraw'){ buildNetworkOptions('wd-coin','wd-network');  onWdNetworkChange();  }
+  };
+
+  /* ═══ TradingView chart ═══ */
+  let tvWidget = null;
+  function loadChart(sym) {
+    sym = sym || 'BINANCE:BTCUSDT';
+    if (tvWidget) { try { tvWidget.remove(); } catch(e) {} }
+    tvWidget = new TradingView.widget({
+      container_id: 'tv-chart', symbol: sym, interval: '60',
+      theme: 'dark', style: '1', locale: 'en', autosize: true,
+      toolbar_bg: '#121826', hide_side_toolbar: false, allow_symbol_change: true,
+    });
+    try { localStorage.setItem('kx_tv_sym', sym); } catch(e) {}
+    document.querySelectorAll('#pair-pills .pair-pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.tv === sym);
+    });
+    setActiveMktRow(sym);
+  }
+
+  document.querySelectorAll('#pair-pills .pair-pill').forEach(p => {
+    p.addEventListener('click', function() { loadChart(this.dataset.tv); });
+  });
+
+  document.querySelectorAll('#card-btc,#card-eth,#card-sol,#card-xrp').forEach(card => {
+    card.addEventListener('click', function() { loadChart(this.dataset.tv); });
+  });
+
+  let defaultSym = 'BINANCE:BTCUSDT';
+  try { defaultSym = localStorage.getItem('kx_tv_sym') || defaultSym; } catch(e) {}
+  if (typeof TradingView !== 'undefined') loadChart(defaultSym);
+
+  /* ═══ Tickers ═══ */
+  const TICKER_DEFAULTS = { BTC: 43000, ETH: 2300, SOL: 100, XRP: 0.55 };
+  const CACHE_KEY = 'kx_ticker_v2';
+  let lastPrices = {};
+
+  function loadTickerCache() {
+    try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch(e) { return {}; }
+  }
+  function saveTickerCache(d) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch(e) {}
+  }
+
+  function fmt(n) { return '$' + (Number(n) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function fmtPct(n) {
+    const v = Number(n); if (!isFinite(v)) return '—';
+    return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  }
+
+  function flash(id, up) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('flash-green', 'flash-red');
+    void el.offsetWidth;
+    el.classList.add(up ? 'flash-green' : 'flash-red');
+  }
+
+  function applyTickers(d, doFlash) {
+    const coins = { btc: 'BTC', eth: 'ETH', sol: 'SOL', xrp: 'XRP' };
+    Object.entries(coins).forEach(([k, sym]) => {
+      const price = Number(d[sym]);
+      if (!isFinite(price) || price <= 0) return;
+      const chg = Number(d[sym + '_CHG']);
+      const pxEl  = document.getElementById('px-' + k);
+      const chgEl = document.getElementById('chg-' + k);
+      if (doFlash && lastPrices[sym] && price !== lastPrices[sym]) flash('card-' + k, price > lastPrices[sym]);
+      if (pxEl)  pxEl.textContent  = fmt(price);
+      if (chgEl) {
+        chgEl.textContent  = fmtPct(chg);
+        chgEl.className    = 'ticker-chg ' + (chg >= 0 ? 'up' : 'dn');
+      }
+      lastPrices[sym] = price;
+    });
+    saveTickerCache({ ...loadTickerCache(), ...lastPrices });
+  }
+
+  function loadTickers() {
+    fetch('/api/ticker_snapshot')
+      .then(r => r.json())
+      .then(d => { if (d && typeof d === 'object') applyTickers(d, true); })
+      .catch(() => {});
+  }
+
+  const cached = loadTickerCache();
+  if (Object.keys(cached).length) applyTickers({ ...TICKER_DEFAULTS, ...cached }, false);
+  loadTickers();
+  setInterval(loadTickers, 15000);
+
+  /* ═══ Account summary ═══ */
+  (function () {
+    const loanLimitEl = document.getElementById('loan-limit-display');
+    const acctLimit   = document.getElementById('acct-loan-limit');
+    if (loanLimitEl && acctLimit) {
+      const target = parseInt(loanLimitEl.dataset.target, 10);
+      acctLimit.textContent = 'CA$' + target.toLocaleString('en-CA');
+    }
+  })();
+  function refreshAcctPortfolio() {
+    fetch('/api/assets')
+      .then(r => r.json())
+      .then(d => {
+        const el = document.getElementById('acct-portfolio');
+        if (el) el.textContent = 'CA$' + Number(d.total_cad || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
+      }).catch(() => {});
+  }
+  refreshAcctPortfolio();
+  setInterval(refreshAcctPortfolio, 30000);
+
+  /* ═══ Markets table ═══ */
+  let mktData = [];
+  let mktSort = { k: 'total_volume', dir: -1 };
+
+  function setActiveMktRow(tvSym) {
+    document.querySelectorAll('#mkt-body tr').forEach(tr => {
+      tr.classList.toggle('row-active', tr.dataset.tv === tvSym);
+    });
+  }
+
+  function renderMkt() {
+    const sorted = [...mktData].sort((a, b) => ((a[mktSort.k] || 0) - (b[mktSort.k] || 0)) * mktSort.dir);
+    const TV_MAP = {
+      BTC:'BINANCE:BTCUSDT', ETH:'BINANCE:ETHUSDT', SOL:'BINANCE:SOLUSDT',
+      BNB:'BINANCE:BNBUSDT', XRP:'BINANCE:XRPUSDT', TRX:'BINANCE:TRXUSDT',
+      LTC:'BINANCE:LTCUSDT', DOGE:'BINANCE:DOGEUSDT', CAD:'FX_IDC:CADUSD',
+    };
+    const currentTv = (tvWidget && document.querySelector('#pair-pills .pair-pill.active')?.dataset.tv) || defaultSym;
+    document.getElementById('mkt-body').innerHTML = sorted.map(c => {
+      const tv  = TV_MAP[c.symbol] || '';
+      const up  = c.change >= 0;
+      const vol = (c.total_volume / 1e6).toFixed(1) + 'M';
+      return `<tr data-tv="${tv}" style="cursor:${tv ? 'pointer' : 'default'}">
+        <td>${c.image ? `<img class="coin-img" src="${c.image}">` : ''}<strong>${c.symbol}</strong> <span style="color:var(--muted);font-size:.7rem;">${c.name}</span></td>
+        <td style="font-variant-numeric:tabular-nums;">$${Number(c.price).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
+        <td style="color:var(--green);">$${Number(c.high||0).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
+        <td style="color:var(--red);">$${Number(c.low||0).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
+        <td class="${up?'up':'dn'}">${up?'+':''}${Number(c.change).toFixed(2)}%</td>
+        <td style="color:var(--muted);">$${vol}</td>
+      </tr>`;
+    }).join('');
+    document.querySelectorAll('#mkt-body tr[data-tv]').forEach(tr => {
+      if (tr.dataset.tv) tr.addEventListener('click', () => loadChart(tr.dataset.tv));
+    });
+    ['price','change','total_volume'].forEach(k => {
+      const el = document.getElementById('ind-' + k);
+      if (!el) return;
+      el.textContent = mktSort.k === k ? (mktSort.dir === -1 ? '▼' : '▲') : '';
+    });
+    setActiveMktRow(document.querySelector('#pair-pills .pair-pill.active')?.dataset.tv || defaultSym);
+  }
+
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      mktSort = { k, dir: mktSort.k === k ? -mktSort.dir : -1 };
+      renderMkt();
+    });
+  });
+
+  function loadMarkets() {
+    fetch('/api/markets')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d) && d.length) { mktData = d; renderMkt(); } })
+      .catch(() => {});
+  }
+  loadMarkets();
+  setInterval(loadMarkets, 15000);
+
+  /* ═══ Assets tab ═══ */
+  window.__assetBalances = {};
+  function loadAssets() {
+    fetch('/api/assets')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('total-assets').textContent  = 'CA$' + Number(d.total_cad   || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
+        document.getElementById('avail-balance').textContent = 'CA$' + Number(d.available_cad || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
+        window.__assetBalances = {};
+        const rows = (d.assets || []).filter(a => a.amount > 0);
+        if (!rows.length) {
+          document.getElementById('asset-body').innerHTML = '<tr><td colspan="5" class="empty-state">No balances yet.</td></tr>';
+          return;
+        }
+        document.getElementById('asset-body').innerHTML = rows.map(a => {
+          window.__assetBalances[a.coin] = a.amount;
+          const bal = a.amount < 1 ? a.amount.toFixed(6) : Number(a.amount).toLocaleString('en-US', { maximumFractionDigits: 4 });
+          return `<tr>
+            <td style="font-weight:700;color:var(--accent);">${a.coin}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;">${bal}</td>
+            <td style="text-align:right;color:var(--muted);">$${Number(a.price_usd||0).toLocaleString('en-US',{maximumFractionDigits:4})}</td>
+            <td style="text-align:right;">$${Number(a.value_usd||0).toLocaleString('en-US',{maximumFractionDigits:2})}</td>
+            <td style="text-align:right;color:var(--accent);">CA$${Number(a.value_cad||0).toLocaleString('en-CA',{maximumFractionDigits:2})}</td>
+          </tr>`;
+        }).join('');
+      }).catch(() => {});
+  }
+
+  /* ═══ Deposit logic ═══ */
+  const NETWORK_MAP = {
+    USDT: ['TRC20','ERC20','BEP20','Polygon','Arbitrum'],
+    USDC: ['ERC20','BEP20','Polygon','Arbitrum','Solana'],
+    BTC:  ['Bitcoin','Lightning','BEP20'],
+    ETH:  ['ERC20','BEP20','Arbitrum','Optimism'],
+    BNB:  ['BEP20','BEP2'],
+    SOL:  ['Solana'],
+    XRP:  ['XRP Ledger'],
+    TRX:  ['TRC20'],
+    LTC:  ['Litecoin'],
+    DOGE: ['Dogecoin'],
+    CAD:  ['ERC20','BEP20'],
+  };
+  const NETWORK_INFO = {
+    TRC20:       { min:'1 USDT',     conf:'1',  fee:'1 USDT',       time:'~2 min' },
+    ERC20:       { min:'10 USDT',    conf:'12', fee:'5 USDT',        time:'~5 min' },
+    BEP20:       { min:'1 USDT',     conf:'15', fee:'0.8 USDT',      time:'~3 min' },
+    Polygon:     { min:'1 USDT',     conf:'128',fee:'0.1 USDT',      time:'~3 min' },
+    Arbitrum:    { min:'1 USDT',     conf:'1',  fee:'0.5 USDT',      time:'~1 min' },
+    Solana:      { min:'0.01 SOL',   conf:'1',  fee:'0.00025 SOL',   time:'~1 min' },
+    Bitcoin:     { min:'0.0001 BTC', conf:'2',  fee:'0.00005 BTC',   time:'~10 min'},
+    Lightning:   { min:'0.0001 BTC', conf:'0',  fee:'<0.00001 BTC',  time:'<1 min' },
+    Optimism:    { min:'0.01 ETH',   conf:'1',  fee:'0.0005 ETH',    time:'~2 min' },
+    BEP2:        { min:'0.01 BNB',   conf:'15', fee:'0.0005 BNB',    time:'~3 min' },
+    'XRP Ledger':{ min:'0.1 XRP',    conf:'1',  fee:'0.00001 XRP',   time:'<1 min' },
+    Litecoin:    { min:'0.01 LTC',   conf:'6',  fee:'0.001 LTC',     time:'~5 min' },
+    Dogecoin:    { min:'100 DOGE',   conf:'6',  fee:'1 DOGE',        time:'~5 min' },
+  };
+  const DEP_ADDRESSES = {
+    USDT:'TN3W4H6rK2ce4vX9YnFQHwKx6X8eVFkKb7',
+    USDC:'0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
+    BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf7',
+    ETH: '0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
+    BNB: 'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2',
+    SOL: '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',
+    XRP: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh',
+    TRX: 'TN3W4H6rK2ce4vX9YnFQHwKx6X8eVFkKb7',
+    LTC: 'LgZcpEMoFDRdHjHjQQC5tGGrB4KJRP7oVG',
+    DOGE:'DGXxxXXxXxXxxXXxXXxXXxXXxXXxXXxXXxXX',
+    CAD: '0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
+  };
+
+  window.buildNetworkOptions = function(coinSelId, netSelId) {
+    const coin  = document.getElementById(coinSelId).value;
+    const netSel = document.getElementById(netSelId);
+    const nets  = NETWORK_MAP[coin] || ['Mainnet'];
+    netSel.innerHTML = nets.map(n => `<option value="${n}">${n}</option>`).join('');
+  };
+
+  window.onDepCoinChange = function() {
+    buildNetworkOptions('dep-coin','dep-network');
+    onDepNetworkChange();
+  };
+  window.onDepNetworkChange = function() {
+    const net = document.getElementById('dep-network').value;
+    const info = NETWORK_INFO[net] || {};
+    document.getElementById('dep-min').textContent  = info.min  || '—';
+    document.getElementById('dep-conf').textContent = info.conf || '—';
+    document.getElementById('dep-warning').textContent =
+      `⚠️ Only send ${document.getElementById('dep-coin').value} on the ${net} network. Sending on the wrong network will result in permanent loss.`;
+    const acked = document.getElementById('dep-ack').checked;
+    if (acked) revealDepAddress();
+  };
+  window.onDepAckChange = function() {
+    if (document.getElementById('dep-ack').checked) revealDepAddress();
+    else {
+      document.getElementById('dep-address').value = 'Check the box above to reveal address';
+      document.getElementById('dep-qr').style.display = 'none';
+      document.getElementById('dep-qr-placeholder').style.display = 'flex';
+    }
+  };
+  function revealDepAddress() {
+    const coin = document.getElementById('dep-coin').value;
+    const addr = DEP_ADDRESSES[coin] || 'Address not available';
+    document.getElementById('dep-address').value = addr;
+    document.getElementById('dep-note').textContent = 'Copy the address above or scan the QR code.';
+    document.getElementById('dep-qr').style.display = 'block';
+    document.getElementById('dep-qr-placeholder').style.display = 'none';
+  }
+
+  /* ═══ Withdraw logic ═══ */
+  window.onWdCoinChange = function() {
+    buildNetworkOptions('wd-coin','wd-network');
+    onWdNetworkChange();
+  };
+  window.onWdNetworkChange = function() {
+    const net = document.getElementById('wd-network').value;
+    const info = NETWORK_INFO[net] || {};
+    document.getElementById('wd-min').textContent  = info.min  || '—';
+    document.getElementById('wd-fee').textContent  = info.fee  || '—';
+    document.getElementById('wd-time').textContent = info.time || '—';
+    const coin = document.getElementById('wd-coin').value;
+    const avail = window.__assetBalances[coin] || 0;
+    document.getElementById('wd-avail').textContent = avail.toFixed(6) + ' ' + coin;
+  };
+  window.onWdAckChange = function() {
+    document.getElementById('wd-submit').disabled = !document.getElementById('wd-ack').checked;
+  };
+  window.setMaxWithdraw = function() {
+    const coin = document.getElementById('wd-coin').value;
+    document.getElementById('wd-amount').value = (window.__assetBalances[coin] || 0).toFixed(6);
+  };
+  window.submitWithdraw = function() {
+    alert('Withdrawal requests are processed manually. Please contact support to proceed.');
+  };
+
+  /* ═══ Init deposit/withdraw network dropdowns ═══ */
+  buildNetworkOptions('dep-coin', 'dep-network');
+  onDepNetworkChange();
+  buildNetworkOptions('wd-coin',  'wd-network');
+  onWdNetworkChange();
+
+  /* ═══ Logout confirmation ═══ */
+  window.confirmLogout = function () {
+    document.getElementById('logoutBackdrop').classList.add('show');
+    document.getElementById('logoutModal').classList.add('show');
+  };
+  window.cancelLogout = function () {
+    document.getElementById('logoutBackdrop').classList.remove('show');
+    document.getElementById('logoutModal').classList.remove('show');
+    /* Re-push state so back button still triggers the prompt */
+    history.pushState(null, '', location.href);
+  };
+  window.doLogout = function () {
+    document.getElementById('logoutBackdrop').classList.remove('show');
+    document.getElementById('logoutModal').classList.remove('show');
+    document.getElementById('loadingOverlay').classList.add('show');
+    window.location.href = '/logout';
+  };
+
+  /* Intercept browser back button */
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', function () {
+    confirmLogout();
+  });
+
+  /* ═══════════════════════════════════════════
+     LOAN APPLICATION MODAL
+  ═══════════════════════════════════════════ */
+
+  const APR_MAP  = { '0.5': 3.9, '0.65': 6.5, '0.75': 9.9 };
+  let loanState  = { ltv: '0.75' };
+
+  window.openLoanModal = function () {
+    document.getElementById('loanModalBackdrop').classList.add('show');
+    document.getElementById('loanModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    lmShowStep(1);
+  };
+
+  window.closeLoanModal = function () {
+    document.getElementById('loanModalBackdrop').classList.remove('show');
+    document.getElementById('loanModal').classList.remove('show');
+    document.body.style.overflow = '';
+    lmResetForm();
+  };
+
+  function lmResetForm() {
+    /* Clear all inputs */
+    document.getElementById('ln-amount').value    = '';
+    document.getElementById('ln-term').value      = '';
+    document.getElementById('ln-purpose').value   = '';
+    document.getElementById('ln-repay').value     = '';
+    document.getElementById('ln-legal-name').value = '{{ user.firstname }} {{ user.lastname }}';
+    document.getElementById('ln-email').value     = '{{ user.email or "" }}';
+    document.getElementById('ln-notes').value     = '';
+    document.getElementById('ln-terms').checked   = false;
+    document.getElementById('ln-amount-hint').textContent = '';
+    hideLmError('lm-error-1');
+    hideLmError('lm-error');
+    /* Reset LTV to default */
+    document.querySelectorAll('.ltv-pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.ltv-pill[data-ltv="0.75"]').classList.add('active');
+    loanState.ltv = '0.75';
+    document.getElementById('lm-step-tax').classList.remove('active');
+    /* Back to step 1 */
+    lmShowStep(1);
+  }
+
+  window.selectLTV = function (btn) {
+    document.querySelectorAll('.ltv-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    loanState.ltv = btn.dataset.ltv;
+    loanCalc();
+  };
+
+  function lmShowStep(n) {
+    for (let i = 1; i <= 2; i++) {
+      const sec = document.getElementById('lm-step-' + i);
+      const dot = document.getElementById('step-dot-' + i);
+      if (sec) sec.classList.toggle('active', i === n);
+      if (dot) {
+        dot.classList.remove('active', 'done');
+        if (i === n) dot.classList.add('active');
+        else if (i < n) dot.classList.add('done');
+      }
+    }
+    document.getElementById('lm-step-processing').classList.remove('active');
+    document.getElementById('lm-step-tax').classList.remove('active');
+    document.getElementById('lm-step-success').classList.remove('active');
+  }
+
+  function showLmError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function hideLmError(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
+
+  window.lmNext = function (from) {
+    if (from === 1) {
+      const amt     = parseFloat(document.getElementById('ln-amount').value);
+      const term    = document.getElementById('ln-term').value;
+      const purpose = document.getElementById('ln-purpose').value;
+      const repay   = document.getElementById('ln-repay').value;
+      const maxLoan = parseInt(document.getElementById('loan-limit-display').dataset.target, 10) || 350000;
+
+      if (!amt || amt < 500)  return showLmError('lm-error-1', 'Please enter a loan amount of at least CA$500.');
+      if (amt > maxLoan)      return showLmError('lm-error-1', `Amount exceeds your loan limit of CA$${maxLoan.toLocaleString('en-CA')}. Please enter a lower amount.`);
+      if (!term)              return showLmError('lm-error-1', 'Please select a loan term.');
+      if (!purpose)           return showLmError('lm-error-1', 'Please select the purpose of the loan.');
+      if (!repay)             return showLmError('lm-error-1', 'Please select a repayment preference.');
+      hideLmError('lm-error-1');
+      buildReview();
+      lmShowStep(2);
+    }
+  };
+
+  window.lmBack = function (from) {
+    lmShowStep(from - 1);
+  };
+
+  window.loanCalc = function () {
+    const amt   = parseFloat(document.getElementById('ln-amount').value) || 0;
+    const apr   = APR_MAP[loanState.ltv] || 9.9;
+    const termD = parseInt(document.getElementById('ln-term').value) || 0;
+
+    const loanLimitEl = document.getElementById('loan-limit-display');
+    const maxLoan = loanLimitEl ? parseInt(loanLimitEl.dataset.target, 10) : 350000;
+    const hintEl  = document.getElementById('ln-amount-hint');
+    if (hintEl) {
+      if (amt > maxLoan) {
+        hintEl.textContent = `⚠ Exceeds your loan limit of CA$${maxLoan.toLocaleString('en-CA')}`;
+        hintEl.classList.add('warn');
+      } else {
+        hintEl.textContent = amt > 0 ? `Max available: CA$${maxLoan.toLocaleString('en-CA')}` : '';
+        hintEl.classList.remove('warn');
+      }
+    }
+  };
+
+  function buildReview() {
+    const amt       = parseFloat(document.getElementById('ln-amount').value) || 0;
+    const ltv       = parseFloat(loanState.ltv) * 100;
+    const apr       = APR_MAP[loanState.ltv];
+    const termD     = parseInt(document.getElementById('ln-term').value) || 0;
+    const termYears = termD / 365;
+    const totalInt  = amt * (apr / 100) * termYears;
+    const totalRepay= amt + totalInt;
+    const monthly   = termD >= 30 ? totalRepay / (termD / 30) : totalRepay;
+    const termLabel = termD < 365 ? termD + ' Days' : (termD / 365) + (termD > 365 ? ' Years' : ' Year');
+    const purpose   = document.getElementById('ln-purpose').value;
+    const repay     = document.getElementById('ln-repay').value;
+
+    const fmtCAD = n => 'CA$' + Number(n).toLocaleString('en-CA', { maximumFractionDigits: 2 });
+
+    document.getElementById('lm-review-block').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;font-size:.8rem;line-height:1.6;">
+        <div>Loan Amount: <strong>${fmtCAD(amt)}</strong></div>
+        <div>Interest Rate: <strong>${apr}% APR</strong></div>
+        <div>Loan Term: <strong>${termLabel}</strong></div>
+        <div>LTV Ratio: <strong>${ltv}%</strong></div>
+        <div>Total Interest: <strong>${fmtCAD(totalInt)}</strong></div>
+        <div>Total Repayable: <strong>${fmtCAD(totalRepay)}</strong></div>
+        <div>Est. Monthly Payment: <strong>${fmtCAD(monthly)}</strong></div>
+        <div>Repayment: <strong>${repay}</strong></div>
+        <div style="grid-column:1/-1;">Purpose: <strong>${purpose}</strong></div>
+      </div>
+    `;
+  }
+
+  window.submitLoanApp = function () {
+    const name  = document.getElementById('ln-legal-name').value.trim();
+    const email = document.getElementById('ln-email').value.trim();
+    const terms = document.getElementById('ln-terms').checked;
+
+    if (!name)  return showLmError('lm-error', 'Please enter your full legal name.');
+    if (!email) return showLmError('lm-error', 'Please enter your email address.');
+    if (!terms) return showLmError('lm-error', 'You must agree to the terms to proceed.');
+    hideLmError('lm-error');
+
+    /* Hide all steps and show processing spinner */
+    for (let i = 1; i <= 2; i++) {
+      const sec = document.getElementById('lm-step-' + i);
+      const dot = document.getElementById('step-dot-' + i);
+      if (sec) sec.classList.remove('active');
+      if (dot) { dot.classList.remove('active'); dot.classList.add('done'); }
+    }
+    document.getElementById('lm-step-processing').classList.add('active');
+
+    /* After 2.5 s, show tax notice */
+    const loanAmt = parseFloat(document.getElementById('ln-amount').value) || 0;
+    const taxAmt  = loanAmt * 0.10;
+    document.getElementById('lm-tax-amount').textContent =
+      'CA$' + taxAmt.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    setTimeout(function () {
+      document.getElementById('lm-step-processing').classList.remove('active');
+      document.getElementById('lm-step-tax').classList.add('active');
+    }, 2500);
+  };
+
+  /* ═══ Loan Limit Info Popup ═══ */
+  window.showLoanLimitInfo = function () {
+    const target = parseInt(document.getElementById('loan-limit-display').dataset.target, 10) || 0;
+    const fmt = target.toLocaleString('en-CA');
+    document.getElementById('ll-amount-display').textContent = 'CA$' + fmt;
+    document.getElementById('ll-max-display').textContent = 'CA$' + fmt;
+    document.getElementById('llBackdrop').classList.add('show');
+    document.getElementById('llPopup').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeLLPopup = function () {
+    document.getElementById('llBackdrop').classList.remove('show');
+    document.getElementById('llPopup').classList.remove('show');
+    document.body.style.overflow = '';
+  };
+
+})();
+</script>
+</body>
+</html>
