@@ -584,17 +584,17 @@
               <div class="dw-left">
                 <label class="field-lbl">Coin</label>
                 <select class="sel" id="dep-coin" onchange="onDepCoinChange()">
-                  <option value="USDT">USDT — Tether</option>
-                  <option value="USDC">USDC — USD Coin</option>
-                  <option value="BTC">BTC — Bitcoin</option>
-                  <option value="ETH">ETH — Ethereum</option>
-                  <option value="BNB">BNB — BNB</option>
-                  <option value="SOL">SOL — Solana</option>
-                  <option value="XRP">XRP — XRP</option>
-                  <option value="TRX">TRX — TRON</option>
-                  <option value="LTC">LTC — Litecoin</option>
-                  <option value="DOGE">DOGE — Dogecoin</option>
-                  <option value="CAD">CAD — CAD Coin</option>
+                  <option value="USDT">USDT</option>
+                  <option value="USDC">USDC</option>
+                  <option value="BTC">BTC</option>
+                  <option value="ETH">ETH</option>
+                  <option value="BNB">BNB</option>
+                  <option value="SOL">SOL</option>
+                  <option value="XRP">XRP</option>
+                  <option value="TRX">TRX</option>
+                  <option value="LTC">LTC</option>
+                  <option value="DOGE">DOGE</option>
+                  <option value="CAD">CAD</option>
                 </select>
                 <label class="field-lbl">Network</label>
                 <select class="sel" id="dep-network" onchange="onDepNetworkChange()"></select>
@@ -629,7 +629,7 @@
               </div>
               <div class="dw-right">
                 <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">QR Code</div>
-                <img id="dep-qr" src="{{ url_for('static', filename='qr code.jpg') }}" alt="QR" style="width:200px;height:200px;border-radius:14px;display:none;" />
+                <img id="dep-qr" src="{{ url_for('static', filename='qr code.jpg') }}?v=2" alt="QR" style="width:200px;height:200px;border-radius:14px;display:none;" />
                 <div id="dep-qr-placeholder" style="width:200px;height:200px;border-radius:14px;background:var(--surface-solid);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;">
                   Reveal address first
                 </div>
@@ -648,17 +648,17 @@
               <div class="dw-left">
                 <label class="field-lbl">Coin</label>
                 <select class="sel" id="wd-coin" onchange="onWdCoinChange()">
-                  <option value="USDT">USDT — Tether</option>
-                  <option value="USDC">USDC — USD Coin</option>
-                  <option value="BTC">BTC — Bitcoin</option>
-                  <option value="ETH">ETH — Ethereum</option>
-                  <option value="BNB">BNB — BNB</option>
-                  <option value="SOL">SOL — Solana</option>
-                  <option value="XRP">XRP — XRP</option>
-                  <option value="TRX">TRX — TRON</option>
-                  <option value="LTC">LTC — Litecoin</option>
-                  <option value="DOGE">DOGE — Dogecoin</option>
-                  <option value="CAD">CAD — CAD Coin</option>
+                  <option value="USDT">USDT</option>
+                  <option value="USDC">USDC</option>
+                  <option value="BTC">BTC</option>
+                  <option value="ETH">ETH</option>
+                  <option value="BNB">BNB</option>
+                  <option value="SOL">SOL</option>
+                  <option value="XRP">XRP</option>
+                  <option value="TRX">TRX</option>
+                  <option value="LTC">LTC</option>
+                  <option value="DOGE">DOGE</option>
+                  <option value="CAD">CAD</option>
                 </select>
                 <label class="field-lbl">Network</label>
                 <select class="sel" id="wd-network" onchange="onWdNetworkChange()"></select>
@@ -1096,12 +1096,21 @@
     const sec = document.getElementById('tab-' + name);
     if (sec) sec.classList.add('active');
     document.querySelectorAll('.nav-item[data-tab]').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
+    const activBtn = btn || document.querySelector(`.nav-item[data-tab="${name}"]`);
+    if (activBtn) activBtn.classList.add('active');
     closeDrawer();
     if (name === 'assets')  loadAssets();
     if (name === 'deposit') { buildNetworkOptions('dep-coin','dep-network'); onDepNetworkChange(); }
     if (name === 'withdraw'){ buildNetworkOptions('wd-coin','wd-network');  onWdNetworkChange();  }
+    history.replaceState(null, '', '#' + name);
   };
+
+  /* Restore tab from URL hash on load */
+  (function () {
+    const hash = location.hash.replace('#', '');
+    const valid = ['overview','assets','deposit','withdraw','history'];
+    if (hash && valid.includes(hash)) switchTab(hash);
+  })();
 
   /* ═══ TradingView chart ═══ */
   let tvWidget = null;
@@ -1448,10 +1457,16 @@
     window.location.href = '/logout';
   };
 
-  /* Intercept browser back button */
+  /* Intercept browser back button — only when navigating away, not between hash tabs */
   history.pushState(null, '', location.href);
   window.addEventListener('popstate', function () {
-    confirmLogout();
+    const hash = location.hash.replace('#', '');
+    const valid = ['overview','assets','deposit','withdraw','history'];
+    if (hash && valid.includes(hash)) {
+      switchTab(hash);
+    } else {
+      confirmLogout();
+    }
   });
 
   /* ═══════════════════════════════════════════
