@@ -35,7 +35,6 @@ login_manager = LoginManager(app)
 COINS = ['USDT', 'USDC', 'CAD', 'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'TRX', 'LTC', 'DOGE']
 
 # ── Models ────────────────────────────────────────────────
-
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id            = db.Column(db.Integer, primary_key=True)
@@ -76,7 +75,6 @@ def unauthorized():
     return redirect(url_for('home'))
 
 # ── Helpers ───────────────────────────────────────────────
-
 def seed_coins(user_id):
     for coin in COINS:
         exists = UserAsset.query.filter_by(user_id=user_id, coin=coin).first()
@@ -113,8 +111,8 @@ def seed_admin():
         db.session.commit()
         seed_coins(admin.id)
 
-# ── Prices cache ──────────────────────────────────────────
 
+# ── Prices cache ──────────────────────────────────────────
 COINGECKO_IDS = [
     'bitcoin', 'ethereum', 'solana', 'binancecoin', 'ripple',
     'tron', 'litecoin', 'dogecoin', 'cardano', 'tether', 'cad-coin'
@@ -124,7 +122,6 @@ _cache_ts = 0
 CACHE_TTL = 13
 
 # ── Public routes ─────────────────────────────────────────
-
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -160,8 +157,8 @@ def api_prices():
         pass
     return jsonify(_prices_cache)
 
-# ── Auth routes ───────────────────────────────────────────
 
+# ── Auth routes ───────────────────────────────────────────
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username', '').strip()
@@ -206,7 +203,6 @@ def logout():
     return redirect(url_for('home'))
 
 # ── User dashboard ────────────────────────────────────────
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -214,8 +210,8 @@ def dashboard():
     return render_template('dashboard.html', user=current_user,
                            assets=assets, coins=COINS)
 
-# ── Profile picture ──────────────────────────────────────
 
+# ── Profile picture ──────────────────────────────────────
 @app.route('/upload-avatar', methods=['POST'])
 @login_required
 def upload_avatar():
@@ -235,8 +231,8 @@ def upload_avatar():
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-# ── Admin routes ──────────────────────────────────────────
 
+# ── Admin routes ──────────────────────────────────────────
 @app.route('/admin')
 @login_required
 @admin_required
@@ -287,7 +283,6 @@ def admin_update_user(user_id):
 
 
 # ── Dashboard API routes ──────────────────────────────────
-
 TICKER_COINS = ['BTC', 'ETH', 'SOL', 'XRP']
 COINGECKO_TO_SYMBOL = {
     'bitcoin': 'BTC', 'ethereum': 'ETH', 'solana': 'SOL',
@@ -377,8 +372,9 @@ def api_transactions():
     return jsonify([])
 
 
+with app.app_context():
+    db.create_all()
+    seed_admin()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        seed_admin()
     app.run(debug=True)
