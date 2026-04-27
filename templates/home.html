@@ -519,13 +519,44 @@
     }
 
     /* ── Responsive ── */
+    /* Tablet */
+    @media (max-width: 900px) {
+      section { padding: 44px 28px; }
+      .stats-inner { padding: 22px 28px; gap: 18px; }
+      .hero { padding: 80px 28px 60px; }
+    }
+
+    /* Large phone */
     @media (max-width: 640px) {
-      nav { padding: 0 20px; }
+      nav { padding: 0 16px; }
       .nav-links { display: none; }
-      .hero, section { padding-left: 20px; padding-right: 20px; }
+      .nav-actions { gap: 8px; }
+      .hero { padding: 56px 18px 44px; }
+      .hero p { font-size: 0.9rem; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn-lg { width: 100%; max-width: 300px; text-align: center; }
+      section { padding: 32px 18px; }
+      .section-title { font-size: 1.25rem; }
+      .stats-inner { padding: 18px 16px; flex-direction: column; align-items: center; gap: 12px; }
+      .stat-value { font-size: 1.35rem; }
       .form-row { grid-template-columns: 1fr; }
-      .stats-inner { padding: 20px; }
-      footer { padding: 28px 20px; }
+      .card-grid { grid-template-columns: 1fr; }
+      footer { padding: 24px 18px; }
+      .footer-inner { flex-direction: column; text-align: center; gap: 8px; }
+    }
+
+    /* Small phone */
+    @media (max-width: 480px) {
+      nav { padding: 0 14px; }
+      .nav-logo { gap: 8px; }
+      .nav-brand-text { font-size: 0.82rem; }
+      .nav-actions .btn:not(.btn-primary) { display: none; }
+      .hero { padding: 44px 14px 36px; }
+      .hero h1 { font-size: 1.7rem; }
+      .hero-badge { font-size: 0.68rem; }
+      section { padding: 26px 14px; }
+      .modal { padding: 26px 18px 22px; margin: 12px; width: calc(100% - 24px); max-width: none; }
+      .stats-inner { padding: 16px 14px; }
     }
   </style>
 </head>
