@@ -121,6 +121,28 @@ _prices_cache = []
 _cache_ts = 0
 CACHE_TTL = 13
 
+def _ensure_prices():
+    """Fetch from CoinGecko if cache is empty or stale."""
+    global _prices_cache, _cache_ts
+    now = time.time()
+    if _prices_cache and (now - _cache_ts) < CACHE_TTL:
+        return
+    try:
+        ids = ','.join(COINGECKO_IDS)
+        url = (
+            'https://api.coingecko.com/api/v3/coins/markets'
+            f'?vs_currency=usd&ids={ids}'
+            '&order=market_cap_desc&sparkline=false'
+            '&price_change_percentage=24h'
+        )
+        data = requests.get(url, timeout=10).json()
+        if isinstance(data, list) and data:
+            data = [c for c in data if c.get('current_price')]
+            _prices_cache = data
+            _cache_ts = now
+    except Exception:
+        pass
+
 # ── Public routes ─────────────────────────────────────────
 @app.route('/')
 def home():
@@ -136,25 +158,7 @@ def markets():
 
 @app.route('/api/prices')
 def api_prices():
-    global _prices_cache, _cache_ts
-    now = time.time()
-    if _prices_cache and (now - _cache_ts) < CACHE_TTL:
-        return jsonify(_prices_cache)
-    try:
-        ids  = ','.join(COINGECKO_IDS)
-        url  = (
-            'https://api.coingecko.com/api/v3/coins/markets'
-            f'?vs_currency=usd&ids={ids}'
-            '&order=market_cap_desc&sparkline=false'
-            '&price_change_percentage=24h'
-        )
-        data = requests.get(url, timeout=10).json()
-        if isinstance(data, list) and data:
-            data = [c for c in data if c.get('current_price')]
-            _prices_cache = data
-            _cache_ts = now
-    except Exception:
-        pass
+    _ensure_prices()
     return jsonify(_prices_cache)
 
 
@@ -299,18 +303,20 @@ def _prices_by_symbol():
 
 @app.route('/api/ticker_snapshot')
 def api_ticker_snapshot():
+    _ensure_prices()
     by_sym = _prices_by_symbol()
     result = {}
     for sym in TICKER_COINS:
         c = by_sym.get(sym)
         if c:
-            result[sym]            = c.get('current_price', 0)
-            result[sym + '_CHG']   = c.get('price_change_percentage_24h', 0)
+            result[sym]          = c.get('current_price', 0)
+            result[sym + '_CHG'] = c.get('price_change_percentage_24h', 0)
     return jsonify(result)
 
 
 @app.route('/api/markets')
 def api_markets():
+    _ensure_prices()
     by_sym = _prices_by_symbol()
     result = []
     for sym in COINS:
