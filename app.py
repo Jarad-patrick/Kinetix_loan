@@ -44,7 +44,7 @@ class User(db.Model, UserMixin):
     email         = db.Column(db.String(120), unique=True, nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin      = db.Column(db.Boolean, default=False)
-    loan_limit    = db.Column(db.Float,   default=350000.0)
+    loan_limit    = db.Column(db.Float,   default=120000.0)
     profile_pic   = db.Column(db.String(256), nullable=True)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     assets        = db.relationship('UserAsset', backref='user',
